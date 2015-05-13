@@ -10,7 +10,7 @@ public class GLRenderCodeConvertPlugin extends BaseConvertPlugin {
 	
 	@Override
 	public boolean process(StringConsumer sc, StringBuilder rb) {
-		for(int i = 0;i< 4;i++) {
+		while(!sc.eatEOF()) {
 			String firstParsString = "";
 			String secondParsString = "";
 			
@@ -69,7 +69,6 @@ public class GLRenderCodeConvertPlugin extends BaseConvertPlugin {
 			rb.append(secondParsString);
 			rb.append(");\n");
 		}
-		if(sc.eatEOF() == false) { return false; }
 		return true;
 	}
 
