@@ -90,6 +90,6 @@ public abstract class BaseConvertPlugin {
         return eatResult;
     }
     public int maxWithZero(int i) {
-        return Math.min(i, 0);
+        return Math.max(i, 0);
     }
 }
