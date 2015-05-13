@@ -117,8 +117,16 @@ public class StringConvert extends JFrame {
 		}
 		rb.append(sc.getPreEat() + ":");
 		*/
+		/*
+		worldRenderer.addVertexWithUV(0, 0, 4F / 16F, 0.5F, 1.0F);
+		worldRenderer.addVertexWithUV(1, 0, 4F / 16F, 1.0F, 1.0F);
+		worldRenderer.addVertexWithUV(1, 1, 4F / 16F, 1.0F, 0.5F);
+		worldRenderer.addVertexWithUV(0, 1, 4F / 16F, 0.5F, 0.5F);
+		 */
+		String str = sc.getString();
 		for(int i = 0;i< 4;i++)
 		{
+			rb.append("worldRenderer.addVertexWithUV(");
 			sc.eatSpaces();
 			if(sc.eatStrings("GL11") == -1) { return false; }
 			sc.eatSpaces();
@@ -163,6 +171,7 @@ public class StringConvert extends JFrame {
 			sc.eatSpaces();
 			if(sc.eatStrings(";") == -1) { return false; }
 			sc.eatSpaces();
+			rb.append(");\n");
 		}
 		if(sc.eatEOF() == false) { return false; }
 		return true;
@@ -173,12 +182,12 @@ public class StringConvert extends JFrame {
 		int preEat = 0;
 		
 		if(sc.eatPattern(Pattern.compile("((\\+|-)\\s*)?((((\\d+\\.\\d*)|(\\d*\\.\\d+)|(\\d+))(F|D|f|d)?)|(\\d+))")) == -1) {
-			sc.setPreEat(0);
+			sc.setLastEatCount(0);
 			return false;
 		}
-		preEat += sc.getPreEat();
+		preEat += sc.getLastEatCount();
 		
-		sc.setPreEat(preEat);
+		sc.setLastEatCount(preEat);
 		return true;
 	}
 	
@@ -187,34 +196,34 @@ public class StringConvert extends JFrame {
 		int preEat = 0;
 		
 		sc.eatSpaces();
-		preEat += sc.getPreEat();
+		preEat += sc.getLastEatCount();
 		
 		if (eatNumber(sc) == false) {
-			sc.setPreEat(0);
+			sc.setLastEatCount(0);
 			return false;
 		}
-		preEat += sc.getPreEat();
+		preEat += sc.getLastEatCount();
 		
 		sc.eatSpaces();
-		preEat += sc.getPreEat();
+		preEat += sc.getLastEatCount();
 		
 		if (sc.eatPattern(Pattern.compile("(\\+|-|\\*|/|%)")) != -1) {
-			preEat += sc.getPreEat();
+			preEat += sc.getLastEatCount();
 			
 			sc.eatSpaces();
-			preEat += sc.getPreEat();
+			preEat += sc.getLastEatCount();
 			
 			if (eatNumber(sc) == false) {
-				sc.setPreEat(0);
+				sc.setLastEatCount(0);
 				return false;
 			}
-			preEat += sc.getPreEat();
+			preEat += sc.getLastEatCount();
 			
 			sc.eatSpaces();
-			preEat += sc.getPreEat();
+			preEat += sc.getLastEatCount();
 		}
 		
-		sc.setPreEat(preEat);
+		sc.setLastEatCount(preEat);
 		return true;
 	}
 

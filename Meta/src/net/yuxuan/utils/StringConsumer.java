@@ -15,7 +15,9 @@ public class StringConsumer {
 	/** 当前用于裁剪的字符串。 */
 	protected String string;
 	/** 上一次剪裁共消耗多少字符。 */
-	protected int preEat; // 默认为0
+	protected int lastEatCount; // 默认为0
+	/** 最后剪裁掉的字符串。 */
+	protected String lastEatString; // 默认为null
 
 	/**
 	 * 初始化一个新的字符串剪裁器。
@@ -36,11 +38,13 @@ public class StringConsumer {
 	 * @return 成功则返回第几个字符串匹配，否则返回-1。
 	 */
 	public int eatStrings(String... stringArray) {
-		preEat = 0;
+		lastEatString = null;
+		lastEatCount = 0;
 		for (int i = 0; i < stringArray.length; i++) {
 			if (string.startsWith(stringArray[i])) {
+				lastEatString = string.substring(0, stringArray[i].length());
+				lastEatCount = stringArray[i].length();
 				string = string.substring(stringArray[i].length());
-				preEat = stringArray[i].length();
 				return i;
 			}
 		}
@@ -56,13 +60,15 @@ public class StringConsumer {
 	 * @return 成功则返回第几个正则表达式匹配，否则返回-1。
 	 */
 	public int eatPattern(Pattern... patternArray) {
-		preEat = 0;
+		lastEatString = null;
+		lastEatCount = 0;
 		for (int i = 0; i < patternArray.length; i++) {
 			Pattern pattern = patternArray[i];
 			Matcher matcher = pattern.matcher(string);
 			if (matcher.lookingAt()) {
+				lastEatString = string.substring(0, matcher.end());
+				lastEatCount = matcher.end();
 				string = string.substring(matcher.end());
-				preEat = matcher.end();
 				return i;
 			}
 		}
@@ -76,7 +82,8 @@ public class StringConsumer {
 	 * @return 是否成功匹配空格。
 	 */
 	public boolean eatSpaces() {
-		preEat = 0;
+		lastEatString = null;
+		lastEatCount = 0;
 		int pos;
 		for (pos = 0; pos < string.length(); pos++) {
 			char c = string.charAt(pos);
@@ -87,21 +94,28 @@ public class StringConsumer {
 		if (pos == 0) {
 			return false;
 		}
+		lastEatString = string.substring(0, pos);
+		lastEatCount = pos;
 		string = string.substring(pos);
-		preEat = pos;
 		return true;
 	}
 
 	/**
 	 * 从字符串头部匹配一个EOF，如果匹配，则返回true，否则返回false。注意此函数不会剪裁任何字符，并始终设置
-	 * <code>{@link #eatEOF()}</code>
-	 * 返回的值为0。如果单次调用返回true，则在不改变状态的情况下，多次调用也返回true。
+	 * <code>{@link #getLastEatCount()}</code> 返回的值为0。如果单次调用返回true，则
+	 * <code>{@link #getLastEatString()}</code>返回空字符串，而且在不改变状态的情况下，多次调用也返回true。
 	 * 
 	 * @return 是否成功匹配EOF。
 	 */
 	public boolean eatEOF() {
-		preEat = 0;
-		return string.isEmpty();
+		lastEatString = null;
+		lastEatCount = 0;
+		if (!string.isEmpty()) {
+			return false;
+		}
+		lastEatString = "";
+		lastEatCount = 0;
+		return true;
 	}
 
 	/**
@@ -121,26 +135,45 @@ public class StringConsumer {
 	 */
 	public void setString(String string) {
 		this.string = string;
-		preEat = 0;
+		lastEatCount = 0;
 	}
 
 	/**
-	 * 返回上一次裁剪共裁剪了多少字符。注意如果上一次裁剪失败，默认为0。但单次裁剪也可能不消耗任何字符
+	 * 返回上一次裁剪共裁剪了多少字符。注意如果上一次裁剪失败，默认返回0。但单次裁剪也可能不消耗任何字符，例如
 	 * <code>{@link #eatEOF()}</code>，所以不能以此函数返回值是否为0，判断上次裁剪是否成功。
 	 * 
 	 * @return 上一次裁剪共裁剪了多少字符。
 	 */
-	public int getPreEat() {
-		return preEat;
+	public int getLastEatCount() {
+		return lastEatCount;
 	}
 
 	/**
 	 * 设置上一次裁剪共裁剪了多少字符。这通常于外部代码将多个对此对象操作统一为1个的情况下使用。
 	 * 
-	 * @param preEat
+	 * @param lastEatCount
 	 *            共裁剪了多少字符。
 	 */
-	public void setPreEat(int preEat) {
-		this.preEat = preEat;
+	public void setLastEatCount(int lastEatCount) {
+		this.lastEatCount = lastEatCount;
+	}
+
+	/**
+	 * 返回上一次裁剪掉的字符串。注意如果上一次裁剪失败，默认返回null。
+	 * 
+	 * @return 上一次剪裁掉的字符串。
+	 */
+	public String getLastEatString() {
+		return lastEatString;
+	}
+
+	/**
+	 * 设置上一次裁剪共裁剪了多少字符。这通常于外部代码将多个对此对象操作统一为1个的情况下使用。
+	 * 
+	 * @param lastEatString
+	 *            最后剪裁掉的字符串。
+	 */
+	public void setLastEatString(String lastEatString) {
+		this.lastEatString = lastEatString;
 	}
 }
