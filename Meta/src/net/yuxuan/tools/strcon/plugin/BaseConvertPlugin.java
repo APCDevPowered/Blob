@@ -32,70 +32,49 @@ public abstract class BaseConvertPlugin {
 
 	public boolean eatNumber(StringConsumer sc) {
 		int lastEatCount = 0;
-		StringBuilder lastEatString = new StringBuilder();
 		
 		if(sc.eatPattern(Pattern.compile("((\\+|-)\\s*)?((((\\d+\\.\\d*)|(\\d*\\.\\d+)|(\\d+))(F|D|f|d)?)|(\\d+))")) == -1) {
-			sc.setLastEatString(null);
 			sc.setLastEatCount(0);
 			return false;
 		}
-		appendNotNull(lastEatString, sc.getLastEatString());
 		lastEatCount += sc.getLastEatCount();
 		
-		sc.setLastEatString(lastEatString.toString());
 		sc.setLastEatCount(lastEatCount);
 		return true;
 	}
 	
 	public boolean eatSingleNumberStm(StringConsumer sc) {
 		int lastEatCount = 0;
-		StringBuilder lastEatString = new StringBuilder();
 		
 		sc.eatSpaces();
-		appendNotNull(lastEatString, sc.getLastEatString());
 		lastEatCount += sc.getLastEatCount();
 		
 		if (eatNumber(sc) == false) {
-			sc.setLastEatString(null);
 			sc.setLastEatCount(0);
 			return false;
 		}
-		appendNotNull(lastEatString, sc.getLastEatString());
 		lastEatCount += sc.getLastEatCount();
 		
 		sc.eatSpaces();
-		appendNotNull(lastEatString, sc.getLastEatString());
 		lastEatCount += sc.getLastEatCount();
 		
 		if (sc.eatPattern(Pattern.compile("(\\+|-|\\*|/|%)")) != -1) {
-			appendNotNull(lastEatString, sc.getLastEatString());
 			lastEatCount += sc.getLastEatCount();
 			
 			sc.eatSpaces();
-			appendNotNull(lastEatString, sc.getLastEatString());
 			lastEatCount += sc.getLastEatCount();
 			
 			if (eatNumber(sc) == false) {
-				sc.setLastEatString(null);
 				sc.setLastEatCount(0);
 				return false;
 			}
-			appendNotNull(lastEatString, sc.getLastEatString());
 			lastEatCount += sc.getLastEatCount();
 			
 			sc.eatSpaces();
-			appendNotNull(lastEatString, sc.getLastEatString());
 			lastEatCount += sc.getLastEatCount();
 		}
 		
-		sc.setLastEatString(lastEatString.toString());
 		sc.setLastEatCount(lastEatCount);
 		return true;
-	}
-
-	public void appendNotNull(StringBuilder stringBuilder, String string) {
-		if (string != null) {
-			stringBuilder.append(string);
-		}
 	}
 }

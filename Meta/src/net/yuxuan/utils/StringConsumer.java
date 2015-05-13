@@ -5,46 +5,48 @@ import java.util.regex.Pattern;
 
 /**
  * {@code StringConsumer}
- * ÀàÓÃÓÚ±íÊ¾Ò»¸ö×Ö·û´®ÏûºÄÆ÷£¬½«°´ÒªÇó³¢ÊÔ´ÓÌá¹©µÄ×Ö·û´®Í·²¿¼ô²Ã²¿·Ö×Ö·û£¬²¢·µ»Ø¼ô²ÃµÄ½á¹û¡£ÓÃÓÚ¶Ô×Ö·û´®½øĞĞ½âÎö£¬²¢¸ù¾İ½á¹û½øĞĞÏà¹Ø²Ù×÷¡£
+ * ç±»ç”¨äºè¡¨ç¤ºä¸€ä¸ªå­—ç¬¦ä¸²æ¶ˆè€—å™¨ï¼Œå°†æŒ‰è¦æ±‚å°è¯•ä»æä¾›çš„å­—ç¬¦ä¸²å¤´éƒ¨å‰ªè£éƒ¨åˆ†å­—ç¬¦ï¼Œå¹¶è¿”å›å‰ªè£çš„ç»“æœã€‚ç”¨äºå¯¹å­—ç¬¦ä¸²è¿›è¡Œè§£æï¼Œå¹¶æ ¹æ®ç»“æœè¿›è¡Œç›¸å…³æ“ä½œã€‚
  * 
  * @author yuxuanchiadm
  * @see java.lang.String
  * @see java.util.regex.Pattern
  */
 public class StringConsumer {
-	/** µ±Ç°ÓÃÓÚ²Ã¼ôµÄ×Ö·û´®¡£ */
-	protected String string;
-	/** ÉÏÒ»´Î¼ô²Ã¹²ÏûºÄ¶àÉÙ×Ö·û¡£ */
-	protected int lastEatCount; // Ä¬ÈÏÎª0
-	/** ×îºó¼ô²ÃµôµÄ×Ö·û´®¡£ */
-	protected String lastEatString; // Ä¬ÈÏÎªnull
+	/** ç”¨äºè£å‰ªçš„å­—ç¬¦ä¸²ã€‚ */
+	private String originalString;
+	/** å½“å‰å‰ªè£ä½ç½®ã€‚ */
+	private int pointer; // é»˜è®¤ä¸º0
+	/** ä¸Šä¸€æ¬¡å‰ªè£å…±æ¶ˆè€—å¤šå°‘å­—ç¬¦ã€‚ */
+	private int lastEatCount; // é»˜è®¤ä¸º0
 
 	/**
-	 * ³õÊ¼»¯Ò»¸öĞÂµÄ×Ö·û´®¼ô²ÃÆ÷¡£
+	 * åˆå§‹åŒ–ä¸€ä¸ªæ–°çš„å­—ç¬¦ä¸²å‰ªè£å™¨ã€‚
 	 * 
-	 * @param string
-	 *            Ìá¹©¸ø×Ö·û´®¼ô²ÃÆ÷µÄ×Ö·û´®¡£
+	 * @param originalString
+	 *            æä¾›ç»™å­—ç¬¦ä¸²å‰ªè£å™¨çš„å­—ç¬¦ä¸²ã€‚
+	 * 
+	 * @throws NullPointerException
+	 *             å¦‚æœ{@code originalString}ä¸ºnullã€‚
 	 */
-	public StringConsumer(String string) {
-		this.string = string;
+	public StringConsumer(String originalString) {
+		setOriginalString(originalString);
 	}
 
 	/**
-	 * ´Ó×Ö·û´®Í·²¿Æ¥Åä´«ÈëµÄ×Ö·û´®Êı×éÖĞµÄËùÓĞ×Ö·û´®£¬Èç¹ûÄ³Ò»¸öÆ¥Åä Ôò½«Æ¥Åä²¿·Ö²Ã¼ô£¬²¢·µ»ØµÚ¼¸¸ö×Ö·û´®Æ¥Åä£¬Èç¹ûÈÎºÎÒ»¸ö×Ö·û´®¶¼
-	 * ²»Æ¥Åä£¬Ôò·µ»Ø-1¡£
+	 * ä»å­—ç¬¦ä¸²å¤´éƒ¨åŒ¹é…ä¼ å…¥çš„å­—ç¬¦ä¸²æ•°ç»„ä¸­çš„æ‰€æœ‰å­—ç¬¦ä¸²ï¼Œå¦‚æœæŸä¸€ä¸ªåŒ¹é… åˆ™å°†åŒ¹é…éƒ¨åˆ†è£å‰ªï¼Œå¹¶è¿”å›ç¬¬å‡ ä¸ªå­—ç¬¦ä¸²åŒ¹é…ï¼Œå¦‚æœä»»ä½•ä¸€ä¸ªå­—ç¬¦ä¸²éƒ½
+	 * ä¸åŒ¹é…ï¼Œåˆ™è¿”å›-1ã€‚
 	 * 
 	 * @param stringArray
-	 *            ½«½øĞĞÆ¥ÅäµÄ×Ö·û´®Êı×é¡£
-	 * @return ³É¹¦Ôò·µ»ØµÚ¼¸¸ö×Ö·û´®Æ¥Åä£¬·ñÔò·µ»Ø-1¡£
+	 *            å°†è¿›è¡ŒåŒ¹é…çš„å­—ç¬¦ä¸²æ•°ç»„ã€‚
+	 * 
+	 * @return æˆåŠŸåˆ™è¿”å›ç¬¬å‡ ä¸ªå­—ç¬¦ä¸²åŒ¹é…ï¼Œå¦åˆ™è¿”å›-1ã€‚
 	 */
 	public int eatStrings(String... stringArray) {
-		lastEatString = null;
-		lastEatCount = 0;
+		setLastEatCount(0);
 		for (int i = 0; i < stringArray.length; i++) {
-			if (string.startsWith(stringArray[i])) {
-				lastEatString = string.substring(0, stringArray[i].length());
-				lastEatCount = stringArray[i].length();
-				string = string.substring(stringArray[i].length());
+			if (getOriginalString().startsWith(stringArray[i], getPointer())) {
+				setPointer(stringArray[i].length() + getPointer());
+				setLastEatCount(stringArray[i].length());
 				return i;
 			}
 		}
@@ -52,23 +54,24 @@ public class StringConsumer {
 	}
 
 	/**
-	 * ´Ó×Ö·û´®Í·²¿Æ¥Åä´«ÈëµÄÕıÔò±í´ïÊ½Êı×éÖĞµÄËùÓĞÕıÔò±í´ïÊ½£¬Èç¹ûÄ³Ò»¸öÆ¥ÅäÔò½«Æ¥Åä²¿·Ö²Ã¼ô£¬²¢·µ»ØµÚ¼¸¸öÕıÔò±í´ïÊ½Æ¥Åä£¬Èç¹û
-	 * ÈÎºÎÒ»¸ö×Ö·û´®¶¼²»Æ¥Åä£¬Ôò·µ»Ø-1¡£
+	 * ä»å­—ç¬¦ä¸²å¤´éƒ¨åŒ¹é…ä¼ å…¥çš„æ­£åˆ™è¡¨è¾¾å¼æ•°ç»„ä¸­çš„æ‰€æœ‰æ­£åˆ™è¡¨è¾¾å¼ï¼Œå¦‚æœæŸä¸€ä¸ªåŒ¹é…åˆ™å°†åŒ¹é…éƒ¨åˆ†è£å‰ªï¼Œå¹¶è¿”å›ç¬¬å‡ ä¸ªæ­£åˆ™è¡¨è¾¾å¼åŒ¹é…ï¼Œå¦‚æœ
+	 * ä»»ä½•ä¸€ä¸ªå­—ç¬¦ä¸²éƒ½ä¸åŒ¹é…ï¼Œåˆ™è¿”å›-1ã€‚
 	 * 
 	 * @param stringArray
-	 *            ½«½øĞĞÆ¥ÅäµÄÕıÔò±í´ïÊ½Êı×é¡£
-	 * @return ³É¹¦Ôò·µ»ØµÚ¼¸¸öÕıÔò±í´ïÊ½Æ¥Åä£¬·ñÔò·µ»Ø-1¡£
+	 *            å°†è¿›è¡ŒåŒ¹é…çš„æ­£åˆ™è¡¨è¾¾å¼æ•°ç»„ã€‚
+	 * 
+	 * @return æˆåŠŸåˆ™è¿”å›ç¬¬å‡ ä¸ªæ­£åˆ™è¡¨è¾¾å¼åŒ¹é…ï¼Œå¦åˆ™è¿”å›-1ã€‚
 	 */
 	public int eatPattern(Pattern... patternArray) {
-		lastEatString = null;
-		lastEatCount = 0;
+		setLastEatCount(0);
 		for (int i = 0; i < patternArray.length; i++) {
 			Pattern pattern = patternArray[i];
-			Matcher matcher = pattern.matcher(string);
+			Matcher matcher = pattern.matcher(getOriginalString());
+			matcher.region(getPointer(), getOriginalString().length());
 			if (matcher.lookingAt()) {
-				lastEatString = string.substring(0, matcher.end());
-				lastEatCount = matcher.end();
-				string = string.substring(matcher.end());
+				int eatCount = matcher.end() - getPointer();
+				setPointer(eatCount + getPointer());
+				setLastEatCount(eatCount);
 				return i;
 			}
 		}
@@ -76,17 +79,16 @@ public class StringConsumer {
 	}
 
 	/**
-	 * ´Ó×Ö·û´®Í·²¿Æ¥ÅäÈÎÒâ¸ö¿Õ¸ñ£¬Èç¹ûÆ¥Åäµ½ÖÁÉÙ1¸ö¿Õ¸ñ£¬Ôò½«Æ¥Åä²¿·Ö²Ã¼ô£¬²¢·µ»Øtrue£¬·ñÔò·µ»Øfalse¡£¿Õ¸ñ×Ö·ûÎª' '¡¢'\n'¡¢'\r'ºÍ
-	 * '\t'¡£
+	 * ä»å­—ç¬¦ä¸²å¤´éƒ¨åŒ¹é…ä»»æ„ä¸ªç©ºæ ¼ï¼Œå¦‚æœåŒ¹é…åˆ°è‡³å°‘1ä¸ªç©ºæ ¼ï¼Œåˆ™å°†åŒ¹é…éƒ¨åˆ†è£å‰ªï¼Œå¹¶è¿”å›trueï¼Œå¦åˆ™è¿”å›falseã€‚ç©ºæ ¼å­—ç¬¦ä¸º' 'ã€'\n'ã€'\r'å’Œ
+	 * '\t'ã€‚
 	 * 
-	 * @return ÊÇ·ñ³É¹¦Æ¥Åä¿Õ¸ñ¡£
+	 * @return æ˜¯å¦æˆåŠŸåŒ¹é…ç©ºæ ¼ã€‚
 	 */
 	public boolean eatSpaces() {
-		lastEatString = null;
-		lastEatCount = 0;
+		setLastEatCount(0);
 		int pos;
-		for (pos = 0; pos < string.length(); pos++) {
-			char c = string.charAt(pos);
+		for (pos = 0; pos + getPointer() < getOriginalString().length(); pos++) {
+			char c = getOriginalString().charAt(pos + getPointer());
 			if (c != ' ' && c != '\n' && c != '\r' && c != '\t') {
 				break;
 			}
@@ -94,86 +96,123 @@ public class StringConsumer {
 		if (pos == 0) {
 			return false;
 		}
-		lastEatString = string.substring(0, pos);
-		lastEatCount = pos;
-		string = string.substring(pos);
+		setPointer(pos + getPointer());
+		setLastEatCount(pos);
 		return true;
 	}
 
 	/**
-	 * ´Ó×Ö·û´®Í·²¿Æ¥ÅäÒ»¸öEOF£¬Èç¹ûÆ¥Åä£¬Ôò·µ»Øtrue£¬·ñÔò·µ»Øfalse¡£×¢Òâ´Ëº¯Êı²»»á¼ô²ÃÈÎºÎ×Ö·û£¬²¢Ê¼ÖÕÉèÖÃ
-	 * <code>{@link #getLastEatCount()}</code> ·µ»ØµÄÖµÎª0¡£Èç¹ûµ¥´Îµ÷ÓÃ·µ»Øtrue£¬Ôò
-	 * <code>{@link #getLastEatString()}</code>·µ»Ø¿Õ×Ö·û´®£¬¶øÇÒÔÚ²»¸Ä±ä×´Ì¬µÄÇé¿öÏÂ£¬¶à´Îµ÷ÓÃÒ²·µ»Øtrue¡£
+	 * ä»å­—ç¬¦ä¸²å¤´éƒ¨åŒ¹é…ä¸€ä¸ªEOFï¼Œå¦‚æœåŒ¹é…ï¼Œåˆ™è¿”å›trueï¼Œå¦åˆ™è¿”å›falseã€‚æ³¨æ„æ­¤å‡½æ•°ä¸ä¼šå‰ªè£ä»»ä½•å­—ç¬¦ï¼Œå¹¶å§‹ç»ˆè®¾ç½®
+	 * <code>{@link #getLastEatCount()}</code> è¿”å›çš„å€¼ä¸º0ã€‚å¦‚æœå•æ¬¡è°ƒç”¨è¿”å›trueï¼Œåˆ™
+	 * <code>{@link #getLastEatString()}</code>è¿”å›ç©ºå­—ç¬¦ä¸²ï¼Œè€Œä¸”åœ¨ä¸æ”¹å˜çŠ¶æ€çš„æƒ…å†µä¸‹ï¼Œå¤šæ¬¡è°ƒç”¨ä¹Ÿè¿”å›trueã€‚
 	 * 
-	 * @return ÊÇ·ñ³É¹¦Æ¥ÅäEOF¡£
+	 * @return æ˜¯å¦æˆåŠŸåŒ¹é…EOFã€‚
 	 */
 	public boolean eatEOF() {
-		lastEatString = null;
-		lastEatCount = 0;
-		if (!string.isEmpty()) {
+		setLastEatCount(0);
+		if (getPointer() < getOriginalString().length()) {
 			return false;
 		}
-		lastEatString = "";
-		lastEatCount = 0;
+		setLastEatCount(0);
 		return true;
 	}
 
 	/**
-	 * ·µ»Øµ±Ç°ÓÃÓÚ²Ã¼ôµÄ×Ö·û´®¡£
+	 * è¿”å›ç”¨äºè£å‰ªçš„å­—ç¬¦ä¸²ã€‚
 	 * 
-	 * @return µ±Ç°ÓÃÓÚ²Ã¼ôµÄ×Ö·û´®¡£
+	 * @return å½“å‰ç”¨äºè£å‰ªçš„å­—ç¬¦ä¸²ã€‚
 	 */
-	public String getString() {
-		return string;
+	public String getOriginalString() {
+		return originalString;
 	}
 
 	/**
-	 * ÉèÖÃÓÃÓÚ²Ã¼ôµÄ×Ö·û´®¡£×¢ÒâÕâ»ØÖØÖÃ<code>{@link #eatEOF()}</code>·µ»ØµÄÖµÎª0¡£
+	 * è®¾ç½®ç”¨äºè£å‰ªçš„å­—ç¬¦ä¸²ã€‚æ³¨æ„è¿™ä¼šé‡ç½®<code>{@link #getPointer()}</code>è¿”å›çš„å€¼ä¸º0ï¼Œ
+	 * <code>{@link #getLastEatCount()}</code>è¿”å›çš„å€¼ä¸º0ï¼Œ
+	 * <code>{@link #getLastEatString()}</code>è¿”å›çš„å€¼ä¸ºnullã€‚
 	 * 
-	 * @param string
-	 *            ÓÃÓÚ²Ã¼ôµÄ×Ö·û´®¡£
+	 * @param originalString
+	 *            ç”¨äºè£å‰ªçš„å­—ç¬¦ä¸²ã€‚
+	 * 
+	 * @throws NullPointerException
+	 *             å¦‚æœ{@code originalString}ä¸ºnullã€‚
 	 */
-	public void setString(String string) {
-		this.string = string;
-		lastEatCount = 0;
+	public void setOriginalString(String originalString) {
+		if (originalString == null) {
+			throw new NullPointerException();
+		}
+		this.originalString = originalString;
+		setPointer(0);
+		setLastEatCount(0);
 	}
 
 	/**
-	 * ·µ»ØÉÏÒ»´Î²Ã¼ô¹²²Ã¼ôÁË¶àÉÙ×Ö·û¡£×¢ÒâÈç¹ûÉÏÒ»´Î²Ã¼ôÊ§°Ü£¬Ä¬ÈÏ·µ»Ø0¡£µ«µ¥´Î²Ã¼ôÒ²¿ÉÄÜ²»ÏûºÄÈÎºÎ×Ö·û£¬ÀıÈç
-	 * <code>{@link #eatEOF()}</code>£¬ËùÒÔ²»ÄÜÒÔ´Ëº¯Êı·µ»ØÖµÊÇ·ñÎª0£¬ÅĞ¶ÏÉÏ´Î²Ã¼ôÊÇ·ñ³É¹¦¡£
+	 * è·å–å½“å‰å‰ªè£ä½ç½®ã€‚
 	 * 
-	 * @return ÉÏÒ»´Î²Ã¼ô¹²²Ã¼ôÁË¶àÉÙ×Ö·û¡£
+	 * @return å½“å‰å‰ªè£ä½ç½®ã€‚
+	 */
+	public int getPointer() {
+		return Math.min(pointer, getOriginalString().length()); // å®‰å…¨ç¬¬ä¸€
+	}
+
+	/**
+	 * è®¾ç½®å½“å‰å‰ªè£ä½ç½®ã€‚
+	 * 
+	 * @param pointer
+	 *            å½“å‰å‰ªè£ä½ç½®ã€‚
+	 * 
+	 * @throws IndexOutOfBoundsException
+	 *             å¦‚æœ{@code pointer}å°äº0ï¼Œæˆ–è€…å¤§äº{@code originalString}çš„é•¿åº¦ã€‚
+	 */
+	public void setPointer(int pointer) {
+		if (pointer < 0 || pointer > getOriginalString().length()) {
+			throw new IndexOutOfBoundsException();
+		}
+		this.pointer = pointer;
+	}
+
+	/**
+	 * è¿”å›è¢«å‰ªè£è¿‡çš„å­—ç¬¦ä¸²ã€‚
+	 * 
+	 * @return å‰ªè£è¿‡çš„å­—ç¬¦ä¸²ã€‚
+	 */
+	public String getCuttedString() {
+		return getOriginalString().substring(getPointer());
+	}
+
+	/**
+	 * è¿”å›ä¸Šä¸€æ¬¡è£å‰ªå…±è£å‰ªäº†å¤šå°‘å­—ç¬¦ã€‚æ³¨æ„å¦‚æœä¸Šä¸€æ¬¡è£å‰ªå¤±è´¥ï¼Œé»˜è®¤è¿”å›0ã€‚ä½†å•æ¬¡è£å‰ªä¹Ÿå¯èƒ½ä¸æ¶ˆè€—ä»»ä½•å­—ç¬¦ï¼Œä¾‹å¦‚
+	 * <code>{@link #eatEOF()}</code>ï¼Œæ‰€ä»¥ä¸èƒ½ä»¥æ­¤å‡½æ•°è¿”å›å€¼æ˜¯å¦ä¸º0ï¼Œåˆ¤æ–­ä¸Šæ¬¡è£å‰ªæ˜¯å¦æˆåŠŸã€‚
+	 * 
+	 * @return ä¸Šä¸€æ¬¡è£å‰ªå…±è£å‰ªäº†å¤šå°‘å­—ç¬¦ã€‚
 	 */
 	public int getLastEatCount() {
 		return lastEatCount;
 	}
 
 	/**
-	 * ÉèÖÃÉÏÒ»´Î²Ã¼ô¹²²Ã¼ôÁË¶àÉÙ×Ö·û¡£ÕâÍ¨³£ÓÚÍâ²¿´úÂë½«¶à¸ö¶Ô´Ë¶ÔÏó²Ù×÷Í³Ò»Îª1¸öµÄÇé¿öÏÂÊ¹ÓÃ¡£
+	 * è®¾ç½®ä¸Šä¸€æ¬¡è£å‰ªå…±è£å‰ªäº†å¤šå°‘å­—ç¬¦ã€‚è¿™é€šå¸¸äºå¤–éƒ¨ä»£ç å°†å¤šä¸ªå¯¹æ­¤å¯¹è±¡æ“ä½œç»Ÿä¸€ä¸º1ä¸ªçš„æƒ…å†µä¸‹ä½¿ç”¨ã€‚
 	 * 
 	 * @param lastEatCount
-	 *            ¹²²Ã¼ôÁË¶àÉÙ×Ö·û¡£
+	 *            å…±è£å‰ªäº†å¤šå°‘å­—ç¬¦ã€‚
+	 * 
+	 * @throws IndexOutOfBoundsException
+	 *             å¦‚æœ{@code lastEatCount}å°äº0ï¼Œæˆ–è€…å¤§äº{@code pointer}çš„é•¿åº¦ã€‚
 	 */
 	public void setLastEatCount(int lastEatCount) {
+		if (lastEatCount < 0 || lastEatCount > getPointer()) {
+			throw new IndexOutOfBoundsException();
+		}
 		this.lastEatCount = lastEatCount;
 	}
 
 	/**
-	 * ·µ»ØÉÏÒ»´Î²Ã¼ôµôµÄ×Ö·û´®¡£×¢ÒâÈç¹ûÉÏÒ»´Î²Ã¼ôÊ§°Ü£¬Ä¬ÈÏ·µ»Ønull¡£
+	 * è¿”å›ä¸Šä¸€æ¬¡è£å‰ªæ‰çš„å­—ç¬¦ä¸²ã€‚æ³¨æ„å¦‚æœä¸Šä¸€æ¬¡è£å‰ªå¤±è´¥ï¼Œé»˜è®¤è¿”å›nullã€‚æ­¤å‡½æ•°çš„è¿”å›å€¼æ ¹æ®{@code lastEatCount}è®¡ç®—å¾—å‡ºã€‚
 	 * 
-	 * @return ÉÏÒ»´Î¼ô²ÃµôµÄ×Ö·û´®¡£
+	 * @return ä¸Šä¸€æ¬¡å‰ªè£æ‰çš„å­—ç¬¦ä¸²ã€‚
 	 */
 	public String getLastEatString() {
-		return lastEatString;
-	}
-
-	/**
-	 * ÉèÖÃÉÏÒ»´Î²Ã¼ô¹²²Ã¼ôÁË¶àÉÙ×Ö·û¡£ÕâÍ¨³£ÓÚÍâ²¿´úÂë½«¶à¸ö¶Ô´Ë¶ÔÏó²Ù×÷Í³Ò»Îª1¸öµÄÇé¿öÏÂÊ¹ÓÃ¡£
-	 * 
-	 * @param lastEatString
-	 *            ×îºó¼ô²ÃµôµÄ×Ö·û´®¡£
-	 */
-	public void setLastEatString(String lastEatString) {
-		this.lastEatString = lastEatString;
+		return getOriginalString().substring(getPointer() - getLastEatCount(),
+				getPointer());
 	}
 }
