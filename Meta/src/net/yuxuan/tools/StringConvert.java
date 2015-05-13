@@ -16,6 +16,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.regex.Pattern;
 
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
@@ -116,6 +117,104 @@ public class StringConvert extends JFrame {
 		}
 		rb.append(sc.getPreEat() + ":");
 		*/
+		for(int i = 0;i< 4;i++)
+		{
+			sc.eatSpaces();
+			if(sc.eatStrings("GL11") == -1) { return false; }
+			sc.eatSpaces();
+			if(sc.eatStrings(".") == -1) { return false; }
+			sc.eatSpaces();
+			if(sc.eatStrings("glTexCoord2") == -1) { return false; }
+			if(sc.eatStrings("f", "d") == -1) { return false; }
+			sc.eatSpaces();
+			if(sc.eatStrings("(") == -1) { return false; }
+			sc.eatSpaces();
+			if(eatSingleNumberStm(sc) == false) { return false; }
+			sc.eatSpaces();
+			if(sc.eatStrings(",") == -1) { return false; }
+			sc.eatSpaces();
+			if(eatSingleNumberStm(sc) == false) { return false; }
+			sc.eatSpaces();
+			if(sc.eatStrings(")") == -1) { return false; }
+			sc.eatSpaces();
+			if(sc.eatStrings(";") == -1) { return false; }
+			sc.eatSpaces();
+			
+			if(sc.eatStrings("GL11") == -1) { return false; }
+			sc.eatSpaces();
+			if(sc.eatStrings(".") == -1) { return false; }
+			sc.eatSpaces();
+			if(sc.eatStrings("glVertex3") == -1) { return false; }
+			if(sc.eatStrings("f", "d") == -1) { return false; }
+			sc.eatSpaces();
+			if(sc.eatStrings("(") == -1) { return false; }
+			sc.eatSpaces();
+			if(eatSingleNumberStm(sc) == false) { return false; }
+			sc.eatSpaces();
+			if(sc.eatStrings(",") == -1) { return false; }
+			sc.eatSpaces();
+			if(eatSingleNumberStm(sc) == false) { return false; }
+			sc.eatSpaces();
+			if(sc.eatStrings(",") == -1) { return false; }
+			sc.eatSpaces();
+			if(eatSingleNumberStm(sc) == false) { return false; }
+			sc.eatSpaces();
+			if(sc.eatStrings(")") == -1) { return false; }
+			sc.eatSpaces();
+			if(sc.eatStrings(";") == -1) { return false; }
+			sc.eatSpaces();
+		}
+		if(sc.eatEOF() == false) { return false; }
+		return true;
+	}
+	
+	public boolean eatNumber(StringConsumer sc)
+	{
+		int preEat = 0;
+		
+		if(sc.eatPattern(Pattern.compile("((\\+|-)\\s*)?((((\\d+\\.\\d*)|(\\d*\\.\\d+)|(\\d+))(F|D|f|d)?)|(\\d+))")) == -1) {
+			sc.setPreEat(0);
+			return false;
+		}
+		preEat += sc.getPreEat();
+		
+		sc.setPreEat(preEat);
+		return true;
+	}
+	
+	public boolean eatSingleNumberStm(StringConsumer sc)
+	{
+		int preEat = 0;
+		
+		sc.eatSpaces();
+		preEat += sc.getPreEat();
+		
+		if (eatNumber(sc) == false) {
+			sc.setPreEat(0);
+			return false;
+		}
+		preEat += sc.getPreEat();
+		
+		sc.eatSpaces();
+		preEat += sc.getPreEat();
+		
+		if (sc.eatPattern(Pattern.compile("(\\+|-|\\*|/|%)")) != -1) {
+			preEat += sc.getPreEat();
+			
+			sc.eatSpaces();
+			preEat += sc.getPreEat();
+			
+			if (eatNumber(sc) == false) {
+				sc.setPreEat(0);
+				return false;
+			}
+			preEat += sc.getPreEat();
+			
+			sc.eatSpaces();
+			preEat += sc.getPreEat();
+		}
+		
+		sc.setPreEat(preEat);
 		return true;
 	}
 

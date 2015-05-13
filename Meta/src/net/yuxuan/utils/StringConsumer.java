@@ -133,4 +133,14 @@ public class StringConsumer {
 	public int getPreEat() {
 		return preEat;
 	}
+
+	/**
+	 * 设置上一次裁剪共裁剪了多少字符。这通常于外部代码将多个对此对象操作统一为1个的情况下使用。
+	 * 
+	 * @param preEat
+	 *            共裁剪了多少字符。
+	 */
+	public void setPreEat(int preEat) {
+		this.preEat = preEat;
+	}
 }
