@@ -5,7 +5,6 @@ import javax.swing.JPanel;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.GridLayout;
 
 import javax.swing.JButton;
@@ -14,15 +13,14 @@ import javax.swing.JScrollPane;
 
 import net.yuxuan.tools.strcon.plugin.BaseConvertPlugin;
 import net.yuxuan.tools.strcon.plugin.GLRenderCodeConvertPlugin;
+import net.yuxuan.tools.strcon.plugin.TestConvertPlugin;
 import net.yuxuan.utils.StringConsumer;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.swing.JLabel;
@@ -158,6 +156,7 @@ public class StringConvert extends JFrame {
 
 	public static void main(String[] args) {
 		StringConvert stringConvert = new StringConvert();
+		stringConvert.registerPlugin(new TestConvertPlugin());
 		stringConvert.registerPlugin(new GLRenderCodeConvertPlugin());
 		stringConvert.setVisible(true);
 	}

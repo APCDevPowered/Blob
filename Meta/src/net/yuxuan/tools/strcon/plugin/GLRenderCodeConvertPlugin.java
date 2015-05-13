@@ -5,7 +5,7 @@ import net.yuxuan.utils.StringConsumer;
 public class GLRenderCodeConvertPlugin extends BaseConvertPlugin {
 
 	public GLRenderCodeConvertPlugin() {
-		setName("GLRenderCodeConvert");
+		setName("GLRenderCodeConverter");
 	}
 	
 	@Override
