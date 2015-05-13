@@ -30,7 +30,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-public class StringConvert extends JFrame {
+public class StringConverter extends JFrame {
     private static final long serialVersionUID = 1L;
     
     private Map<String, BaseConvertPlugin> plugins = new HashMap<String, BaseConvertPlugin>();
@@ -50,8 +50,8 @@ public class StringConvert extends JFrame {
     private JLabel resultLabel;
     private JTabbedPane tabbedPane;
 
-    public StringConvert() {
-        setTitle("StringConvert - yuxuanchiadm");
+    public StringConverter() {
+        setTitle("StringConverter - yuxuanchiadm");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(800, 600);
 
@@ -156,7 +156,7 @@ public class StringConvert extends JFrame {
     }
 
     public static void main(String[] args) {
-        StringConvert stringConvert = new StringConvert();
+        StringConverter stringConvert = new StringConverter();
         stringConvert.registerPlugin(new TestConvertPlugin());
         stringConvert.registerPlugin(new GLRenderCodeConvertPlugin());
         stringConvert.registerPlugin(new GLStateCodeConvertPlugin());

@@ -10,7 +10,7 @@ import net.yuxuan.utils.StringConsumer.PatternEatResult;
 public class GLStateCodeConvertPlugin extends BaseConvertPlugin {
 
     public GLStateCodeConvertPlugin() {
-        setName("GLStateCodeConvertPlugin");
+        setName("GLStateCodeConverter");
     }
 
     @Override
