@@ -10,14 +10,6 @@ import net.yuxuan.utils.StringConsumer.EatResult;
 public abstract class BaseConvertPlugin {
     private String name;
     
-    /* Example Code
-    if (!sc.eatSpaces()) { return false; }
-    rb.append(sc.getPreEat() + ":");
-    if (sc.eatPattern(Pattern.compile("[0-9]")) == -1) { return false; }
-    rb.append(sc.getPreEat() + ":");
-    if (!sc.eatEOF()) { return false; }
-    rb.append(sc.getPreEat() + ":");
-    */
     public abstract boolean process(StringConsumer sc, StringBuilder rb);
     
     public Component getSettingComponent() {
