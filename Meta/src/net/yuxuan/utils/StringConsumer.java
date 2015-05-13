@@ -51,12 +51,12 @@ public class StringConsumer {
                 setLastEatCount(strings[i].length());
                 StringEatResult stringEatResult = new StringEatResult(true,
                         strings, i);
-                setEatResult(stringEatResult);
+                setLastEatResult(stringEatResult);
                 return stringEatResult;
             }
         }
         StringEatResult stringEatResult = new StringEatResult(false, strings);
-        setEatResult(stringEatResult);
+        setLastEatResult(stringEatResult);
         return stringEatResult;
     }
 
@@ -81,13 +81,13 @@ public class StringConsumer {
                 setLastEatCount(eatCount);
                 PatternEatResult patternEatResult = new PatternEatResult(true,
                         patterns, i, matcher);
-                setEatResult(patternEatResult);
+                setLastEatResult(patternEatResult);
                 return patternEatResult;
             }
         }
         PatternEatResult patternEatResult = new PatternEatResult(false,
                 patterns);
-        setEatResult(patternEatResult);
+        setLastEatResult(patternEatResult);
         return patternEatResult;
     }
 
@@ -108,13 +108,13 @@ public class StringConsumer {
         }
         if (pos == 0) {
             EatResult eatResult = new EatResult(false);
-            setEatResult(eatResult);
+            setLastEatResult(eatResult);
             return eatResult;
         }
         setPointer(pos + getPointer());
         setLastEatCount(pos);
         EatResult eatResult = new EatResult(true);
-        setEatResult(eatResult);
+        setLastEatResult(eatResult);
         return eatResult;
     }
 
@@ -129,12 +129,12 @@ public class StringConsumer {
         setLastEatCount(-1);
         if (getPointer() < getOriginalString().length()) {
             EatResult eatResult = new EatResult(false);
-            setEatResult(eatResult);
+            setLastEatResult(eatResult);
             return eatResult;
         }
         setLastEatCount(0);
         EatResult eatResult = new EatResult(true);
-        setEatResult(eatResult);
+        setLastEatResult(eatResult);
         return eatResult;
     }
 
@@ -151,6 +151,7 @@ public class StringConsumer {
      * 设置用于裁剪的字符串。注意这会重置<code>{@link #getPointer()}</code>返回的值为0，
      * <code>{@link #getLastEatCount()}</code>返回的值为-1，
      * <code>{@link #getLastEatString()}</code>返回的值为null。
+     * <code>{@link #getLastEatResult()}</code>返回的值为null。
      * 
      * @param originalString
      *            用于裁剪的字符串。
@@ -165,6 +166,7 @@ public class StringConsumer {
         this.originalString = originalString;
         setPointer(0);
         setLastEatCount(-1);
+        setLastEatResult(null);
     }
 
     /**
@@ -252,11 +254,11 @@ public class StringConsumer {
     /**
      * 设置上一次剪裁的结果。
      * 
-     * @param eatResult
+     * @param lastEatResult
      *            剪裁的结果。
      */
-    public void setEatResult(EatResult eatResult) {
-        this.lastEatResult = eatResult;
+    public void setLastEatResult(EatResult lastEatResult) {
+        this.lastEatResult = lastEatResult;
     }
 
     /**

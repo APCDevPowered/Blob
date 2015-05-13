@@ -30,14 +30,14 @@ public abstract class BaseConvertPlugin {
         if(sc.eatPattern(Pattern.compile(Regular.JAVA_NUMBER)).isSuccess() == false) {
             sc.setLastEatCount(0);
             EatResult eatResult = sc.new EatResult(false);
-            sc.setEatResult(eatResult);
+            sc.setLastEatResult(eatResult);
             return eatResult;
         }
         lastEatCount += maxWithZero(sc.getLastEatCount());
         
         sc.setLastEatCount(lastEatCount);
         EatResult eatResult = sc.new EatResult(true);
-        sc.setEatResult(eatResult);
+        sc.setLastEatResult(eatResult);
         return eatResult;
     }
     
@@ -50,7 +50,7 @@ public abstract class BaseConvertPlugin {
         if (eatNumber(sc).isSuccess() == false) {
             sc.setLastEatCount(0);
             EatResult eatResult = sc.new EatResult(false);
-            sc.setEatResult(eatResult);
+            sc.setLastEatResult(eatResult);
             return eatResult;
         }
         lastEatCount += maxWithZero(sc.getLastEatCount());
@@ -67,7 +67,7 @@ public abstract class BaseConvertPlugin {
             if (eatNumber(sc).isSuccess() == false) {
                 sc.setLastEatCount(0);
                 EatResult eatResult = sc.new EatResult(false);
-                sc.setEatResult(eatResult);
+                sc.setLastEatResult(eatResult);
                 return eatResult;
             }
             lastEatCount += maxWithZero(sc.getLastEatCount());
@@ -78,7 +78,7 @@ public abstract class BaseConvertPlugin {
         
         sc.setLastEatCount(lastEatCount);
         EatResult eatResult = sc.new EatResult(true);
-        sc.setEatResult(eatResult);
+        sc.setLastEatResult(eatResult);
         return eatResult;
     }
     public int maxWithZero(int i) {
