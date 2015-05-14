@@ -43,7 +43,7 @@ public class NewBlockPosCodeConvertPlugin extends BaseConvertPlugin {
                         varName = parPatternEatResult.getMatcher().group("varName");
                     }
                 }
-                sc.eatPattern(Pattern.compile("(\\s*(?<operator>\\+|-)\\s*)" + "(?<stm>(" + Regular.JAVA_STRING + "|[^\"])*?)\\s*" + (i == 2 ? "(?=\\))" : "(?=,)")));
+                sc.eatPattern(Pattern.compile("(\\s*(?<operator>\\+|-)\\s*)" + "(?<stm>(" + Regular.JAVA_STRING + "|[^\",])*?)\\s*" + (i == 2 ? "(?=\\))" : "(?=,)")));
                 PatternEatResult stmPatternEatResult = (PatternEatResult) sc.getLastEatResult();
                 if(stmPatternEatResult.isSuccess())
                 {
