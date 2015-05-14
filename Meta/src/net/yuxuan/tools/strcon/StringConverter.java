@@ -14,6 +14,7 @@ import javax.swing.JScrollPane;
 import net.yuxuan.tools.strcon.plugin.BaseConvertPlugin;
 import net.yuxuan.tools.strcon.plugin.GLRenderCodeConvertPlugin;
 import net.yuxuan.tools.strcon.plugin.GLStateCodeConvertPlugin;
+import net.yuxuan.tools.strcon.plugin.NewBlockPosCodeConvertPlugin;
 import net.yuxuan.tools.strcon.plugin.TestConvertPlugin;
 import net.yuxuan.utils.StringConsumer;
 
@@ -160,6 +161,7 @@ public class StringConverter extends JFrame {
         stringConvert.registerPlugin(new TestConvertPlugin());
         stringConvert.registerPlugin(new GLRenderCodeConvertPlugin());
         stringConvert.registerPlugin(new GLStateCodeConvertPlugin());
+        stringConvert.registerPlugin(new NewBlockPosCodeConvertPlugin());
         stringConvert.setVisible(true);
     }
 }

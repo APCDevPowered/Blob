@@ -24,7 +24,7 @@ public class GLStateCodeConvertPlugin extends BaseConvertPlugin {
             if(sc.eatStrings(".").isSuccess() == false) { return false; }
             sc.eatSpaces();
             if(sc.eatStrings("gl").isSuccess() == false) { return false; }
-            if(sc.eatPattern(Pattern.compile("([a-zA-Z]|_|$)+([a-zA-Z0-9]|_|$)*+")).isSuccess() == false) { return false; }
+            if(sc.eatPattern(Pattern.compile("[a-zA-Z_$][a-zA-Z0-9_$]*")).isSuccess() == false) { return false; }
             String methodName = sc.getLastEatString();
             methodName = Character.toLowerCase(methodName.charAt(0)) + methodName.substring(1);
             sc.eatSpaces();
@@ -37,7 +37,7 @@ public class GLStateCodeConvertPlugin extends BaseConvertPlugin {
                 if(sc.eatStrings(".").isSuccess() == false) { return false; }
                 sc.eatSpaces();
                 if(sc.eatStrings("GL_").isSuccess() == false) { return false; }
-                if(sc.eatPattern(Pattern.compile("([a-zA-Z]|_|$)+([a-zA-Z0-9]|_|$)*")).isSuccess() == false) { return false; }
+                if(sc.eatPattern(Pattern.compile("[a-zA-Z_$][a-zA-Z0-9_$]*")).isSuccess() == false) { return false; }
                 String capability = sc.getLastEatString();
                 String[] capabilitySplitByUnderline = capability.split("_");
                 capability = "";
@@ -73,7 +73,7 @@ public class GLStateCodeConvertPlugin extends BaseConvertPlugin {
                 }
                 rb.append(methodName);
                 rb.append("(");
-                if(sc.eatPattern(Pattern.compile("(?<parameter>(" + Regular.JAVA_STRING + "|.+?)*)\\s*\\)\\s*;\\s*")).isSuccess() == false) { return false; }
+                if(sc.eatPattern(Pattern.compile("(?<parameter>(" + Regular.JAVA_STRING + "|[^\"])*?)\\s*\\)\\s*;\\s*")).isSuccess() == false) { return false; }
                 rb.append(((PatternEatResult) sc.getLastEatResult()).getMatcher().group("parameter"));
                 rb.append(");\n");
             }
