@@ -1,7 +1,5 @@
 package net.yuxuan.tools.strcon.plugin;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 import net.yuxuan.utils.Regular;
