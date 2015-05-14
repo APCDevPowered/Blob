@@ -16,30 +16,36 @@ public class NewBlockPosCodeConvertPlugin extends BaseConvertPlugin {
 
     @Override
     public boolean process(StringConsumer sc, StringBuilder rb) {
-        while(sc.eatEOF().isSuccess() == false) {
+        mainloop: while (sc.eatEOF().isSuccess() == false) {
+            StringBuffer sb = new StringBuffer();
+            int startPointer = sc.getPointer();
+            
             Map<String, String> methodNameConvertMap = new HashMap<String, String>();
             
-            if(sc.eatPattern(Pattern.compile("(?<otherCode>[\\s\\S]+?)\\.\\s*(?<methodName>getTileEntity)\\s*\\(\\s*"), Pattern.compile("(?<otherCode>[\\s\\S]+?)\\.\\s*(?<methodName>isAirBlock)\\s*\\(\\s*")).isSuccess() == false) {
+            if(sc.eatPattern(Pattern.compile("(?<otherCode>[\\s\\S]+?)\\.\\s*(?<methodName>(getTileEntity|isAirBlock))\\s*\\(\\s*")).isSuccess() == false) {
                 rb.append(sc.getCuttedString());
                 rb.append("\n");
-                break;
+                break mainloop;
             }
             PatternEatResult methodPatternEatResult = (PatternEatResult) sc.getLastEatResult();
             String otherCode = methodPatternEatResult.getMatcher().group("otherCode");
-            rb.append(otherCode);
+            sb.append(otherCode);
             String methodName = methodPatternEatResult.getMatcher().group("methodName");
             String newMethodName = methodNameConvertMap.get(methodName);
             if(newMethodName == null) {
                 newMethodName = methodName;
             }
-            rb.append(".");
-            rb.append(newMethodName);
-            rb.append("(");
+            sb.append(".");
+            sb.append(newMethodName);
+            sb.append("(");
             String varName = null;
             String[] operatorArray = new String[3];
             String[] stmArray = new String[3];
             for(int i = 0;i < 3;i++) {
-                if(sc.eatPattern(Pattern.compile("\\s*(?<varName>[a-zA-Z_$][a-zA-Z0-9_$]*)\\s*" + "\\.\\s*" + "(x|y|z)Coord\\s*")).isSuccess() == false) { return false; }
+                if(sc.eatPattern(Pattern.compile("\\s*(?<varName>[a-zA-Z_$][a-zA-Z0-9_$]*)\\s*" + "\\.\\s*" + "(x|y|z)Coord\\s*")).isSuccess() == false) {
+                    rb.append(sc.getOriginalString().substring(startPointer, sc.getPointer()));
+                    continue mainloop;
+                }
                 PatternEatResult parPatternEatResult = (PatternEatResult) sc.getLastEatResult();
                 varName = parPatternEatResult.getMatcher().group("varName");
                 sc.eatPattern(Pattern.compile("(\\s*(?<operator>\\+|-)\\s*)" + "(?<stm>(" + Regular.JAVA_STRING + "|[^\"])*?)\\s*" + (i == 2 ? "(?=\\))" : "(?=,)")));
@@ -58,34 +64,38 @@ public class NewBlockPosCodeConvertPlugin extends BaseConvertPlugin {
                     sc.eatSpaces();
                 }
             }
-            rb.append(varName);
-            rb.append(".getPos().add(");
+            sb.append(varName);
+            sb.append(".getPos().add(");
             for(int i = 0;i < 3;i++) {
                 if(operatorArray[i] == null) {
-                    rb.append("0");
+                    sb.append("0");
                 }
                 else {
                     if(operatorArray[i].equals("-")) {
-                        rb.append("-");
+                        sb.append("-");
                     }
                     if(stmArray[i].matches(Regular.JAVA_NUMBER)) {
-                        rb.append(stmArray[i]);
+                        sb.append(stmArray[i]);
                     }
                     else {
-                        rb.append("(");
-                        rb.append(stmArray[i]);
-                        rb.append(")");
+                        sb.append("(");
+                        sb.append(stmArray[i]);
+                        sb.append(")");
                     }
                 }
                 if(i != 2) {
-                    rb.append(", ");
+                    sb.append(", ");
                 }
             }
-            rb.append(")");
+            sb.append(")");
             sc.eatSpaces();
-            if(sc.eatStrings(")").isSuccess() == false) { return false; }
+            if(sc.eatStrings(")").isSuccess() == false) {
+                rb.append(sc.getOriginalString().substring(startPointer, sc.getPointer()));
+                continue mainloop;
+            }
             sc.eatSpaces();
-            rb.append(")");
+            sb.append(")");
+            rb.append(sb);
         }
         rb.deleteCharAt(rb.length() - 1);
         return true;
