@@ -24,7 +24,7 @@ public class GLStateCodeConvertPlugin extends BaseConvertPlugin {
             if(sc.eatStrings(".").isSuccess() == false) { return false; }
             sc.eatSpaces();
             if(sc.eatStrings("gl").isSuccess() == false) { return false; }
-            if(sc.eatPattern(Pattern.compile("([a-zA-Z]|_|$)+([a-zA-Z0-1]|_|$)*")).isSuccess() == false) { return false; }
+            if(sc.eatPattern(Pattern.compile("([a-zA-Z]|_|$)+([a-zA-Z0-9]|_|$)*+")).isSuccess() == false) { return false; }
             String methodName = sc.getLastEatString();
             methodName = Character.toLowerCase(methodName.charAt(0)) + methodName.substring(1);
             sc.eatSpaces();
