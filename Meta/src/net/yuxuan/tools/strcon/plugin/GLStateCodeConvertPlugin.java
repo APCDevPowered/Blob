@@ -78,6 +78,7 @@ public class GLStateCodeConvertPlugin extends BaseConvertPlugin {
                 rb.append(");\n");
             }
         }
+        rb.deleteCharAt(rb.length() - 1);
         return true;
     }
 }

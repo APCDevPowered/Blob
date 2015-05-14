@@ -73,6 +73,7 @@ public class GLRenderCodeConvertPlugin extends BaseConvertPlugin {
             rb.append(secondParsString);
             rb.append(");\n");
         }
+        rb.deleteCharAt(rb.length() - 1);
         return true;
     }
 }
