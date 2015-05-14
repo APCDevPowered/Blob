@@ -20,9 +20,7 @@ public class NewBlockPosCodeConvertPlugin extends BaseConvertPlugin {
             StringBuffer sb = new StringBuffer();
             int startPointer = sc.getPointer();
             
-            Map<String, String> methodNameConvertMap = new HashMap<String, String>();
-            
-            if(sc.eatPattern(Pattern.compile("(?<otherCode>[\\s\\S]+?)\\.\\s*(?<methodName>(getTileEntity|isAirBlock))\\s*\\(\\s*")).isSuccess() == false) {
+            if(sc.eatPattern(Pattern.compile("(?<otherCode>[\\s\\S]+?)\\.\\s*(?<methodName>([a-zA-Z_$][a-zA-Z0-9_$]*))\\s*\\(\\s*")).isSuccess() == false) {
                 rb.append(sc.getCuttedString());
                 rb.append("\n");
                 break mainloop;
@@ -31,23 +29,22 @@ public class NewBlockPosCodeConvertPlugin extends BaseConvertPlugin {
             String otherCode = methodPatternEatResult.getMatcher().group("otherCode");
             sb.append(otherCode);
             String methodName = methodPatternEatResult.getMatcher().group("methodName");
-            String newMethodName = methodNameConvertMap.get(methodName);
-            if(newMethodName == null) {
-                newMethodName = methodName;
-            }
             sb.append(".");
-            sb.append(newMethodName);
+            sb.append(methodName);
             sb.append("(");
             String varName = null;
             String[] operatorArray = new String[3];
             String[] stmArray = new String[3];
             for(int i = 0;i < 3;i++) {
-                if(sc.eatPattern(Pattern.compile("\\s*(?<varName>[a-zA-Z_$][a-zA-Z0-9_$]*)\\s*" + "\\.\\s*" + "(x|y|z)Coord\\s*")).isSuccess() == false) {
-                    rb.append(sc.getOriginalString().substring(startPointer, sc.getPointer()));
-                    continue mainloop;
+                if(sc.eatPattern(Pattern.compile("\\s*(x|y|z)Coord\\s*")).isSuccess() == false) {
+                    if(sc.eatPattern(Pattern.compile("\\s*(?<varName>[a-zA-Z_$][a-zA-Z0-9_$]*)\\s*" + "\\.\\s*" + "(x|y|z)Coord\\s*")).isSuccess() == false) {
+                        rb.append(sc.getOriginalString().substring(startPointer, sc.getPointer()));
+                        continue mainloop;
+                    } else {
+                        PatternEatResult parPatternEatResult = (PatternEatResult) sc.getLastEatResult();
+                        varName = parPatternEatResult.getMatcher().group("varName");
+                    }
                 }
-                PatternEatResult parPatternEatResult = (PatternEatResult) sc.getLastEatResult();
-                varName = parPatternEatResult.getMatcher().group("varName");
                 sc.eatPattern(Pattern.compile("(\\s*(?<operator>\\+|-)\\s*)" + "(?<stm>(" + Regular.JAVA_STRING + "|[^\"])*?)\\s*" + (i == 2 ? "(?=\\))" : "(?=,)")));
                 PatternEatResult stmPatternEatResult = (PatternEatResult) sc.getLastEatResult();
                 if(stmPatternEatResult.isSuccess())
@@ -64,8 +61,11 @@ public class NewBlockPosCodeConvertPlugin extends BaseConvertPlugin {
                     sc.eatSpaces();
                 }
             }
-            sb.append(varName);
-            sb.append(".getPos().add(");
+            if(varName != null) {
+                sb.append(varName);
+                sb.append(".");
+            }
+            sb.append("getPos().add(");
             for(int i = 0;i < 3;i++) {
                 if(operatorArray[i] == null) {
                     sb.append("0");
