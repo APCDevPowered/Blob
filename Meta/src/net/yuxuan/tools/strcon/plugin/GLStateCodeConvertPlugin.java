@@ -18,7 +18,8 @@ public class GLStateCodeConvertPlugin extends BaseConvertPlugin {
         while(sc.eatEOF().isSuccess() == false) {
             rb.append("GlStateManager.");
             sc.eatSpaces();
-            if(sc.eatStrings("GL11").isSuccess() == false) { return false; }
+            if(sc.eatStrings("GL").isSuccess() == false) { return false; }
+            if(sc.eatPattern(Pattern.compile("[0-9][0-9]")).isSuccess() == false) { return false; }
             sc.eatSpaces();
             if(sc.eatStrings(".").isSuccess() == false) { return false; }
             sc.eatSpaces();
@@ -30,14 +31,27 @@ public class GLStateCodeConvertPlugin extends BaseConvertPlugin {
             if(sc.eatStrings("(").isSuccess() == false) { return false; }
             sc.eatSpaces();
             if (methodName.equals("disable") || methodName.equals("enable")) {
-                if(sc.eatStrings("GL11").isSuccess() == false) { return false; }
+                if(sc.eatStrings("GL").isSuccess() == false) { return false; }
+                if(sc.eatPattern(Pattern.compile("[0-9][0-9]")).isSuccess() == false) { return false; }
                 sc.eatSpaces();
                 if(sc.eatStrings(".").isSuccess() == false) { return false; }
                 sc.eatSpaces();
                 if(sc.eatStrings("GL_").isSuccess() == false) { return false; }
-                if(sc.eatPattern(Pattern.compile("([a-zA-Z]|_|$)+([a-zA-Z0-1]|_|$)*+")).isSuccess() == false) { return false; }
+                if(sc.eatPattern(Pattern.compile("([a-zA-Z]|_|$)+([a-zA-Z0-9]|_|$)*")).isSuccess() == false) { return false; }
                 String capability = sc.getLastEatString();
-                capability = Character.toUpperCase(capability.charAt(0)) + capability.substring(1).toLowerCase();
+                String[] capabilitySplitByUnderline = capability.split("_");
+                capability = "";
+                for(String capabilitySplitEntry : capabilitySplitByUnderline)
+                {
+                    if(capabilitySplitEntry.matches("([1-4](B|I|F|D))"))
+                    {
+                        capability += capabilitySplitEntry;
+                    }
+                    else
+                    {
+                        capability += capabilitySplitEntry.charAt(0) + capabilitySplitEntry.substring(1).toLowerCase();
+                    }
+                }
                 rb.append(methodName);
                 rb.append(capability);
                 rb.append("();\n");

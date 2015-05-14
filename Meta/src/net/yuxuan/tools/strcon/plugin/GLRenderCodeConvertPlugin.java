@@ -1,5 +1,7 @@
 package net.yuxuan.tools.strcon.plugin;
 
+import java.util.regex.Pattern;
+
 import net.yuxuan.utils.StringConsumer;
 
 public class GLRenderCodeConvertPlugin extends BaseConvertPlugin {
@@ -16,7 +18,8 @@ public class GLRenderCodeConvertPlugin extends BaseConvertPlugin {
             
             rb.append("worldRenderer.addVertexWithUV(");
             sc.eatSpaces();
-            if(sc.eatStrings("GL11").isSuccess() == false) { return false; }
+            if(sc.eatStrings("GL").isSuccess() == false) { return false; }
+            if(sc.eatPattern(Pattern.compile("[0-9][0-9]")).isSuccess() == false) { return false; }
             sc.eatSpaces();
             if(sc.eatStrings(".").isSuccess() == false) { return false; }
             sc.eatSpaces();
@@ -38,7 +41,8 @@ public class GLRenderCodeConvertPlugin extends BaseConvertPlugin {
             if(sc.eatStrings(";").isSuccess() == false) { return false; }
             sc.eatSpaces();
             
-            if(sc.eatStrings("GL11").isSuccess() == false) { return false; }
+            if(sc.eatStrings("GL").isSuccess() == false) { return false; }
+            if(sc.eatPattern(Pattern.compile("[0-9][0-9]")).isSuccess() == false) { return false; }
             sc.eatSpaces();
             if(sc.eatStrings(".").isSuccess() == false) { return false; }
             sc.eatSpaces();
