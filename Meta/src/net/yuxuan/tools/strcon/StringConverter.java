@@ -12,10 +12,14 @@ import javax.swing.JTextArea;
 import javax.swing.JScrollPane;
 
 import net.yuxuan.tools.strcon.plugin.BaseConvertPlugin;
+import net.yuxuan.tools.strcon.plugin.CaseConversionConvertPlugin;
+import net.yuxuan.tools.strcon.plugin.DeStringIzationConvertPlugin;
 import net.yuxuan.tools.strcon.plugin.GLRenderCodeConvertPlugin;
 import net.yuxuan.tools.strcon.plugin.GLStateCodeConvertPlugin;
 import net.yuxuan.tools.strcon.plugin.NewBlockPosCodeConvertPlugin;
-import net.yuxuan.tools.strcon.plugin.TestConvertPlugin;
+import net.yuxuan.tools.strcon.plugin.NumberNormalizationConvertPlugin;
+import net.yuxuan.tools.strcon.plugin.StringIzationConvertPlugin;
+import net.yuxuan.tools.strcon.plugin.ExampleConvertPlugin;
 import net.yuxuan.utils.StringConsumer;
 
 import java.awt.event.ActionListener;
@@ -158,10 +162,14 @@ public class StringConverter extends JFrame {
 
     public static void main(String[] args) {
         StringConverter stringConvert = new StringConverter();
-        stringConvert.registerPlugin(new TestConvertPlugin());
+        stringConvert.registerPlugin(new ExampleConvertPlugin());
         stringConvert.registerPlugin(new GLRenderCodeConvertPlugin());
         stringConvert.registerPlugin(new GLStateCodeConvertPlugin());
         stringConvert.registerPlugin(new NewBlockPosCodeConvertPlugin());
+        stringConvert.registerPlugin(new StringIzationConvertPlugin());
+        stringConvert.registerPlugin(new DeStringIzationConvertPlugin());
+        stringConvert.registerPlugin(new NumberNormalizationConvertPlugin());
+        stringConvert.registerPlugin(new CaseConversionConvertPlugin());
         stringConvert.setVisible(true);
     }
 }
