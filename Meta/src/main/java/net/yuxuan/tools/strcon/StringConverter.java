@@ -34,6 +34,7 @@ import javax.swing.SwingConstants;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import java.awt.Dimension;
 
 public class StringConverter extends JFrame {
     private static final long serialVersionUID = 1L;
@@ -57,8 +58,8 @@ public class StringConverter extends JFrame {
 
     public StringConverter() {
         setTitle("StringConverter - yuxuanchiadm");
+        setMinimumSize(new Dimension(800, 600));
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(800, 600);
 
         getContentPane().setLayout(new BorderLayout(0, 0));
 
@@ -67,6 +68,7 @@ public class StringConverter extends JFrame {
         panel.setLayout(new GridLayout(1, 0, 0, 0));
 
         inputPanel = new JPanel();
+        inputPanel.setPreferredSize(new Dimension(600, 800));
         panel.add(inputPanel);
         inputPanel.setLayout(new BorderLayout(0, 0));
 
@@ -81,6 +83,7 @@ public class StringConverter extends JFrame {
         inputPanel.add(inputLabel, BorderLayout.NORTH);
 
         resultPanel = new JPanel();
+        resultPanel.setPreferredSize(new Dimension(600, 800));
         panel.add(resultPanel);
         resultPanel.setLayout(new BorderLayout(0, 0));
 
@@ -171,5 +174,6 @@ public class StringConverter extends JFrame {
         stringConvert.registerPlugin(new NumberNormalizationConvertPlugin());
         stringConvert.registerPlugin(new CaseConversionConvertPlugin());
         stringConvert.setVisible(true);
+        stringConvert.pack();
     }
 }

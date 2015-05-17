@@ -35,7 +35,7 @@ public class StringIzationConvertPlugin extends BaseConvertPlugin {
         rb.append('\"');
         rb.append(builder.toString());
         rb.append('\"');
-        sc.eatEOF();
+        if(sc.eatEOF().isSuccess() == false) { return false; }
         return true;
     }
 }

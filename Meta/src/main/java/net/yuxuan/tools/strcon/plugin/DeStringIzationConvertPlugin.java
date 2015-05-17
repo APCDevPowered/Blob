@@ -72,7 +72,7 @@ public class DeStringIzationConvertPlugin extends BaseConvertPlugin {
         }
         rb.append(builder.toString());
         sc.eatSpaces();
-        sc.eatEOF();
+        if(sc.eatEOF().isSuccess() == false) { return false; }
         return true;
     }
 }
