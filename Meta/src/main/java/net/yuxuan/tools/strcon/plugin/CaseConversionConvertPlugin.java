@@ -13,6 +13,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
@@ -81,6 +82,8 @@ public class CaseConversionConvertPlugin extends BaseConvertPlugin {
                     });
             this.propertyList = ImmutableList.copyOf(propertyList);
 
+            List<Mode> modeList = new ArrayList<Mode>();
+
             Map<IProperty<? extends Comparable<?>>, Comparable<?>> propertyValueMap = new HashMap<IProperty<? extends Comparable<?>>, Comparable<?>>();
             Map<IProperty<? extends Comparable<?>>, ResettableIterator<? extends Comparable<?>>> propertyValueIteratorMap = new HashMap<IProperty<? extends Comparable<?>>, ResettableIterator<? extends Comparable<?>>>();
             for (IProperty<? extends Comparable<?>> property : propertyList) {
@@ -91,43 +94,39 @@ public class CaseConversionConvertPlugin extends BaseConvertPlugin {
                         allowedValueIterator.hasNext() ? allowedValueIterator
                                 .next() : null);
                 propertyValueIteratorMap.put(property, allowedValueIterator);
-            }
-            List<Mode> modeList = new ArrayList<Mode>();
-            if (propertyList.length == 0) {
                 modeList.add(createMode(name, propertyValueMap));
-            } else {
-                nextMode: while (true) {
-                    for (int currentProperty = 0; currentProperty < propertyList.length; currentProperty++) {
-                        IProperty<? extends Comparable<?>> property = propertyList[currentProperty];
-                        ResettableIterator<? extends Comparable<?>> valueIterator = propertyValueIteratorMap
-                                .get(property);
-                        valueIterator.reset();
-                        while (valueIterator.hasNext()) {
-                            Comparable<?> value = valueIterator.next();
-                            if (value == propertyValueMap.get(property)) {
-                                if (valueIterator.hasNext()) {
-                                    propertyValueMap.put(property,
-                                            valueIterator.next());
-                                    modeList.add(createMode(name,
-                                            propertyValueMap));
-                                    continue nextMode;
-                                }
+            }
+            nextMode: while (propertyList.length > 0) {
+                for (int currentProperty = 0; currentProperty < propertyList.length; currentProperty++) {
+                    IProperty<? extends Comparable<?>> property = propertyList[currentProperty];
+                    ResettableIterator<? extends Comparable<?>> valueIterator = propertyValueIteratorMap
+                            .get(property);
+                    valueIterator.reset();
+                    while (valueIterator.hasNext()) {
+                        Comparable<?> value = valueIterator.next();
+                        if (value == propertyValueMap.get(property)) {
+                            if (valueIterator.hasNext()) {
+                                propertyValueMap.put(property,
+                                        valueIterator.next());
+                                modeList.add(createMode(name, propertyValueMap));
+                                continue nextMode;
                             }
-                            valueIterator.reset();
-                            propertyValueMap.put(property, valueIterator
-                                    .hasNext() ? valueIterator.next() : null);
-                            if (currentProperty >= propertyList.length - 1) {
-                                break nextMode;
-                            }
-                            break;
                         }
+                        valueIterator.reset();
+                        propertyValueMap.put(property,
+                                valueIterator.hasNext() ? valueIterator.next()
+                                        : null);
+                        if (currentProperty >= propertyList.length - 1) {
+                            break nextMode;
+                        }
+                        break;
                     }
                 }
             }
-            
+
             this.modeList = ImmutableList.copyOf(modeList);
-            
-            for(Mode mode : modeList) {
+
+            for (Mode mode : modeList) {
                 mode.buildPropertyValueModeTable();
             }
         }
@@ -331,23 +330,110 @@ public class CaseConversionConvertPlugin extends BaseConvertPlugin {
         return setting;
     }
 
+    private int indexOfUppercaseLetter(String string, int fromIndex) {
+        Matcher matcher = Pattern.compile("\\p{javaUpperCase}").matcher(string);
+        if (matcher.find(fromIndex)) {
+            return matcher.start();
+        } else {
+            return -1;
+        }
+    }
+
     @Override
     public boolean process(StringConsumer sc, StringBuilder rb) {
         if (mode == null) {
             return false;
-        } else if (mode == TO_LOWERCASE) {
+        } else if (mode.getModeDefinition() == TO_LOWERCASE) {
             sc.eatPattern(Pattern.compile("[\\s\\S]*"));
-            rb.append(sc.getLastEatString().toLowerCase());
+            if (mode.getValue(USE_JAVA_IDENTIFIER_CONVERT)) {
+                String string = sc.getLastEatString();
+                int startSearchUnderlineIndex = 0;
+                int underlineIndex = -1;
+                boolean isFirstWord = true;
+                while ((underlineIndex = string.indexOf('_',
+                        startSearchUnderlineIndex)) != -1) {
+                    if (isFirstWord) {
+                        rb.append(string.substring(0,
+                                underlineIndex == 0 ? 1 : underlineIndex)
+                                .toLowerCase());
+                        isFirstWord = false;
+                    } else {
+                        if (startSearchUnderlineIndex == underlineIndex) {
+                            rb.append("_");
+                        } else {
+                            int firstLetter = string
+                                    .codePointAt(startSearchUnderlineIndex);
+                            rb.appendCodePoint(Character
+                                    .toUpperCase(firstLetter));
+                            rb.append(string
+                                    .substring(
+                                            (Character
+                                                    .isSupplementaryCodePoint(firstLetter) ? 2
+                                                    : 1)
+                                                    + startSearchUnderlineIndex,
+                                            underlineIndex).toLowerCase());
+                        }
+                    }
+                    startSearchUnderlineIndex = underlineIndex + 1;
+                }
+                if (isFirstWord) {
+                    rb.append(string.substring(startSearchUnderlineIndex,
+                            string.length()).toLowerCase());
+                    isFirstWord = false;
+                } else {
+                    if (startSearchUnderlineIndex < string.length()) {
+                        int firstLetter = string
+                                .codePointAt(startSearchUnderlineIndex);
+                        rb.appendCodePoint(Character.toUpperCase(firstLetter));
+                        rb.append(string
+                                .substring(
+                                        (Character
+                                                .isSupplementaryCodePoint(firstLetter) ? 2
+                                                : 1)
+                                                + startSearchUnderlineIndex,
+                                        string.length()).toLowerCase());
+                    } else {
+                        rb.append("_");
+                    }
+                }
+            } else {
+                rb.append(sc.getLastEatString().toLowerCase());
+            }
             if (sc.eatEOF().isSuccess() == false) {
                 return false;
             }
-        } else if (mode == TO_UPPERCASE) {
+        } else if (mode.getModeDefinition() == TO_UPPERCASE) {
             sc.eatPattern(Pattern.compile("[\\s\\S]*"));
-            rb.append(sc.getLastEatString().toUpperCase());
+            if (mode.getValue(USE_JAVA_IDENTIFIER_CONVERT)) {
+                String string = sc.getLastEatString();
+                int startSearchUppercaseLetterIndex = 0;
+                int uppercaseLetterIndex = -1;
+                boolean isFirstWord = true;
+                while ((uppercaseLetterIndex = indexOfUppercaseLetter(string,
+                        startSearchUppercaseLetterIndex)) != -1) {
+                    rb.append(string.substring(
+                            startSearchUppercaseLetterIndex
+                                    - (isFirstWord ? 0 : 1),
+                            (isFirstWord ? ++uppercaseLetterIndex
+                                    : uppercaseLetterIndex)).toUpperCase());
+                    rb.append(isFirstWord ? "" : "_");
+                    startSearchUppercaseLetterIndex = uppercaseLetterIndex + 1;
+                    if (isFirstWord) {
+                        isFirstWord = false;
+                    }
+                }
+                rb.append(string
+                        .substring(
+                                startSearchUppercaseLetterIndex
+                                        - (isFirstWord ? 0 : 1),
+                                string.length()).toUpperCase());
+            } else {
+                rb.append(sc.getLastEatString().toUpperCase());
+            }
             if (sc.eatEOF().isSuccess() == false) {
                 return false;
             }
-        } else if (mode == TO_FIRST_LETTER_LOWERCASE) {
+        } else if (mode.getModeDefinition() == TO_FIRST_LETTER_LOWERCASE) {
             sc.eatPattern(Pattern.compile("[\\s\\S]*"));
             String string = sc.getLastEatString();
             if (!string.isEmpty()) {
@@ -360,7 +446,7 @@ public class CaseConversionConvertPlugin extends BaseConvertPlugin {
             if (sc.eatEOF().isSuccess() == false) {
                 return false;
             }
-        } else if (mode == TO_FIRST_LETTER_UPPERCASE) {
+        } else if (mode.getModeDefinition() == TO_FIRST_LETTER_UPPERCASE) {
             sc.eatPattern(Pattern.compile("[\\s\\S]*"));
             String string = sc.getLastEatString();
             if (!string.isEmpty()) {
@@ -408,10 +494,13 @@ public class CaseConversionConvertPlugin extends BaseConvertPlugin {
                     radioButtonToLowercase.setText("toLowercase");
                     buttonGroup.add(radioButtonToLowercase);
                     radioButtonToLowercase.addItemListener(new ItemListener() {
+
+                        protected JCheckBox useJavaIdentifierConverterCheckBox;
+
                         private JPanel radioButtonToLowercaseSettingPanel = new JPanel() {
                             private static final long serialVersionUID = 1L;
                             {
-                                JCheckBox useJavaIdentifierConverterCheckBox = new JCheckBox();
+                                useJavaIdentifierConverterCheckBox = new JCheckBox();
                                 useJavaIdentifierConverterCheckBox
                                         .setText("useJavaIdentifierConverter");
                                 useJavaIdentifierConverterCheckBox
@@ -448,7 +537,11 @@ public class CaseConversionConvertPlugin extends BaseConvertPlugin {
                         @Override
                         public void itemStateChanged(ItemEvent e) {
                             if (e.getStateChange() == ItemEvent.SELECTED) {
-                                mode = TO_LOWERCASE.getDefaultMode();
+                                mode = TO_LOWERCASE.getDefaultMode()
+                                        .withProperty(
+                                                USE_JAVA_IDENTIFIER_CONVERT,
+                                                useJavaIdentifierConverterCheckBox
+                                                        .isSelected());
                                 setModeSettingComponent(radioButtonToLowercaseSettingPanel);
                             } else if (e.getStateChange() == ItemEvent.DESELECTED) {
                                 setModeSettingComponent(null);
@@ -461,10 +554,13 @@ public class CaseConversionConvertPlugin extends BaseConvertPlugin {
                     radioButtonToUppercase.setText("toUppercase");
                     buttonGroup.add(radioButtonToUppercase);
                     radioButtonToUppercase.addItemListener(new ItemListener() {
+
+                        protected JCheckBox useJavaIdentifierConverterCheckBox;
+
                         private JPanel radioButtonToUppercaseSettingPanel = new JPanel() {
                             private static final long serialVersionUID = 1L;
                             {
-                                JCheckBox useJavaIdentifierConverterCheckBox = new JCheckBox();
+                                useJavaIdentifierConverterCheckBox = new JCheckBox();
                                 useJavaIdentifierConverterCheckBox
                                         .setText("useJavaIdentifierConverter");
                                 useJavaIdentifierConverterCheckBox
@@ -473,13 +569,13 @@ public class CaseConversionConvertPlugin extends BaseConvertPlugin {
                                             public void itemStateChanged(
                                                     ItemEvent e) {
                                                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                                                    mode = TO_LOWERCASE
+                                                    mode = TO_UPPERCASE
                                                             .getDefaultMode()
                                                             .withProperty(
                                                                     USE_JAVA_IDENTIFIER_CONVERT,
                                                                     true);
                                                 } else if (e.getStateChange() == ItemEvent.DESELECTED) {
-                                                    mode = TO_LOWERCASE
+                                                    mode = TO_UPPERCASE
                                                             .getDefaultMode()
                                                             .withProperty(
                                                                     USE_JAVA_IDENTIFIER_CONVERT,
@@ -501,7 +597,11 @@ public class CaseConversionConvertPlugin extends BaseConvertPlugin {
                         @Override
                         public void itemStateChanged(ItemEvent e) {
                             if (e.getStateChange() == ItemEvent.SELECTED) {
-                                mode = TO_UPPERCASE.getDefaultMode();
+                                mode = TO_UPPERCASE.getDefaultMode()
+                                        .withProperty(
+                                                USE_JAVA_IDENTIFIER_CONVERT,
+                                                useJavaIdentifierConverterCheckBox
+                                                        .isSelected());
                                 setModeSettingComponent(radioButtonToUppercaseSettingPanel);
                             } else if (e.getStateChange() == ItemEvent.DESELECTED) {
                                 setModeSettingComponent(null);
