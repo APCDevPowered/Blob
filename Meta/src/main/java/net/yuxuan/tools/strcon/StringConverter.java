@@ -16,10 +16,14 @@ import net.yuxuan.tools.strcon.plugin.CaseConversionConvertPlugin;
 import net.yuxuan.tools.strcon.plugin.DeStringIzationConvertPlugin;
 import net.yuxuan.tools.strcon.plugin.GLRenderCodeConvertPlugin;
 import net.yuxuan.tools.strcon.plugin.GLStateCodeConvertPlugin;
+import net.yuxuan.tools.strcon.plugin.JavaCTreeElementConvertPlugin;
+import net.yuxuan.tools.strcon.plugin.JavaComplexStmConvertPlugin;
+import net.yuxuan.tools.strcon.plugin.MultilineStringIzationConvertPlugin;
 import net.yuxuan.tools.strcon.plugin.NewBlockPosCodeConvertPlugin;
 import net.yuxuan.tools.strcon.plugin.NumberNormalizationConvertPlugin;
 import net.yuxuan.tools.strcon.plugin.StringIzationConvertPlugin;
 import net.yuxuan.tools.strcon.plugin.ExampleConvertPlugin;
+import net.yuxuan.tools.strcon.plugin.ForgeGLNewRenderConvertPlugin;
 import net.yuxuan.utils.StringConsumer;
 
 import java.awt.event.ActionListener;
@@ -173,6 +177,10 @@ public class StringConverter extends JFrame {
         stringConvert.registerPlugin(new DeStringIzationConvertPlugin());
         stringConvert.registerPlugin(new NumberNormalizationConvertPlugin());
         stringConvert.registerPlugin(new CaseConversionConvertPlugin());
+        stringConvert.registerPlugin(new JavaCTreeElementConvertPlugin());
+        stringConvert.registerPlugin(new ForgeGLNewRenderConvertPlugin());
+        stringConvert.registerPlugin(new JavaComplexStmConvertPlugin());
+        stringConvert.registerPlugin(new MultilineStringIzationConvertPlugin());
         stringConvert.setVisible(true);
         stringConvert.pack();
     }

@@ -250,6 +250,16 @@ public class StringConsumer {
     public EatResult getLastEatResult() {
         return lastEatResult;
     }
+    
+    /**
+     * 返回上一次剪裁的结果。注意如果上一次裁剪失败，默认返回null。
+     * 
+     * @param resultClass 上一次剪裁结果的类型.
+     * @return 上一次剪裁的结果。
+     */
+    public <T> T getLastEatResult(Class<T> resultClass) {
+    	return resultClass.cast(getLastEatResult());
+    }
 
     /**
      * 设置上一次剪裁的结果。
