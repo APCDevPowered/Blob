@@ -54,7 +54,10 @@ public class SQLToStringLiteralsConvertPlugin extends BaseConvertPlugin {
 					+ ifTablePrefix(() -> "_") + "(?<tableName>\\S*?)\\s*\\x28([\\s\\S]*?);))\\R(\\R|$)"),
 				Pattern.compile("(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:DROP)\\s+(?i:TABLE)\\s+)"
 					+ ifTablePrefix(() -> Pattern.quote(tablePrefix)) + "(?<sqlExprAfterTablePrefix>"
-					+ ifTablePrefix(() -> "_") + "(?<tableName>\\S*?)\\s*;))\\R(\\R|$)"));
+					+ ifTablePrefix(() -> "_") + "(?<tableName>\\S*?)\\s*;))\\R(\\R|$)"),
+				Pattern.compile("(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:INSERT)\\s+(?i:INTO)\\s+)"
+					+ ifTablePrefix(() -> Pattern.quote(tablePrefix)) + "(?<sqlExprAfterTablePrefix>"
+					+ ifTablePrefix(() -> "_") + "(?<tableName>\\S*?)\\s*\\x28([\\s\\S]*?);))\\R(\\R|$)"));
 			PatternEatResult result = sc.getLastEatResult(PatternEatResult.class);
 			if (!result.isSuccess())
 				break;
@@ -69,6 +72,9 @@ public class SQLToStringLiteralsConvertPlugin extends BaseConvertPlugin {
 				break;
 			case 1:
 				finalString.append("drop");
+				break;
+			case 2:
+				finalString.append("insert");
 				break;
 			default:
 				throw new IllegalStateException();
@@ -85,7 +91,18 @@ public class SQLToStringLiteralsConvertPlugin extends BaseConvertPlugin {
 			if (!caseConversionConvertPlugin.process(new StringConsumer(temp.toString()), finalString))
 				return false;
 			caseConversionConvertPlugin.setMode(oldMode);
-			finalString.append("TableSQL =\n");
+			switch (result.getMatchPatternIndex()) {
+			case 0:
+			case 1:
+				finalString.append("TableSQL");
+				break;
+			case 2:
+				finalString.append("SQL");
+				break;
+			default:
+				throw new IllegalStateException();
+			}
+			finalString.append(" =\n");
 			if (tablePrefix == null) {
 				if (!getStringConverter().getPlugin(MultilineStringIzationConvertPlugin.class)
 					.process(new StringConsumer(sqlExpr), finalString))
