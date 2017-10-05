@@ -24,18 +24,26 @@ public class CaseConversionConvertPlugin extends BaseConvertPlugin {
 
 	private IMode mode;
 
-	private static final PropertyBoolean USE_JAVA_IDENTIFIER_CONVERT = new PropertyBoolean(
-			"USE_JAVA_IDENTIFIER_CONVERT");
+	public static final PropertyBoolean USE_JAVA_IDENTIFIER_CONVERT = new PropertyBoolean(
+		"USE_JAVA_IDENTIFIER_CONVERT");
 
-	private static final ModeDefinition TO_LOWERCASE = new ModeDefinition("TO_LOWERCASE", USE_JAVA_IDENTIFIER_CONVERT);
-	private static final ModeDefinition TO_UPPERCASE = new ModeDefinition("TO_UPPERCASE", USE_JAVA_IDENTIFIER_CONVERT);
-	private static final ModeDefinition TO_FIRST_LETTER_LOWERCASE = new ModeDefinition("TO_FIRST_LETTER_LOWERCASE");
-	private static final ModeDefinition TO_FIRST_LETTER_UPPERCASE = new ModeDefinition("TO_FIRST_LETTER_UPPERCASE");
+	public static final ModeDefinition TO_LOWERCASE = new ModeDefinition("TO_LOWERCASE", USE_JAVA_IDENTIFIER_CONVERT);
+	public static final ModeDefinition TO_UPPERCASE = new ModeDefinition("TO_UPPERCASE", USE_JAVA_IDENTIFIER_CONVERT);
+	public static final ModeDefinition TO_FIRST_LETTER_LOWERCASE = new ModeDefinition("TO_FIRST_LETTER_LOWERCASE");
+	public static final ModeDefinition TO_FIRST_LETTER_UPPERCASE = new ModeDefinition("TO_FIRST_LETTER_UPPERCASE");
 
-	private JCaseConversionConvertPluginSetting setting = new JCaseConversionConvertPluginSetting();
+	private final JCaseConversionConvertPluginSetting setting = new JCaseConversionConvertPluginSetting(this);
 
 	public CaseConversionConvertPlugin() {
 		setName("CaseConversionConverter");
+	}
+
+	public IMode getMode() {
+		return mode;
+	}
+
+	public void setMode(IMode mode) {
+		this.mode = mode;
 	}
 
 	public Component getSettingComponent() {
@@ -53,6 +61,7 @@ public class CaseConversionConvertPlugin extends BaseConvertPlugin {
 
 	@Override
 	public boolean process(StringConsumer sc, StringBuilder rb) {
+		IMode mode = getMode();
 		if (mode == null) {
 			return false;
 		} else if (mode.getModeDefinition() == TO_LOWERCASE) {
@@ -72,8 +81,9 @@ public class CaseConversionConvertPlugin extends BaseConvertPlugin {
 						} else {
 							int firstLetter = string.codePointAt(startSearchUnderlineIndex);
 							rb.appendCodePoint(Character.toUpperCase(firstLetter));
-							rb.append(string.substring((Character.isSupplementaryCodePoint(firstLetter) ? 2 : 1)
-									+ startSearchUnderlineIndex, underlineIndex).toLowerCase());
+							rb.append(string.substring(
+								(Character.isSupplementaryCodePoint(firstLetter) ? 2 : 1) + startSearchUnderlineIndex,
+								underlineIndex).toLowerCase());
 						}
 					}
 					startSearchUnderlineIndex = underlineIndex + 1;
@@ -86,8 +96,8 @@ public class CaseConversionConvertPlugin extends BaseConvertPlugin {
 						int firstLetter = string.codePointAt(startSearchUnderlineIndex);
 						rb.appendCodePoint(Character.toUpperCase(firstLetter));
 						rb.append(string.substring(
-								(Character.isSupplementaryCodePoint(firstLetter) ? 2 : 1) + startSearchUnderlineIndex,
-								string.length()).toLowerCase());
+							(Character.isSupplementaryCodePoint(firstLetter) ? 2 : 1) + startSearchUnderlineIndex,
+							string.length()).toLowerCase());
 					} else {
 						rb.append("_");
 					}
@@ -107,7 +117,7 @@ public class CaseConversionConvertPlugin extends BaseConvertPlugin {
 				boolean isFirstWord = true;
 				while ((uppercaseLetterIndex = indexOfUppercaseLetter(string, startSearchUppercaseLetterIndex)) != -1) {
 					rb.append(string.substring(startSearchUppercaseLetterIndex - (isFirstWord ? 0 : 1),
-							(isFirstWord ? ++uppercaseLetterIndex : uppercaseLetterIndex)).toUpperCase());
+						(isFirstWord ? ++uppercaseLetterIndex : uppercaseLetterIndex)).toUpperCase());
 					rb.append(isFirstWord ? "" : "_");
 					startSearchUppercaseLetterIndex = uppercaseLetterIndex + 1;
 					if (isFirstWord) {
@@ -115,7 +125,7 @@ public class CaseConversionConvertPlugin extends BaseConvertPlugin {
 					}
 				}
 				rb.append(string.substring(startSearchUppercaseLetterIndex - (isFirstWord ? 0 : 1), string.length())
-						.toUpperCase());
+					.toUpperCase());
 			} else {
 				rb.append(sc.getLastEatString().toUpperCase());
 			}
@@ -150,11 +160,11 @@ public class CaseConversionConvertPlugin extends BaseConvertPlugin {
 		return true;
 	}
 
-	public class JCaseConversionConvertPluginSetting extends JPanel {
+	public static class JCaseConversionConvertPluginSetting extends JPanel {
+
 		private static final long serialVersionUID = 1L;
 
-		public JCaseConversionConvertPluginSetting() {
-
+		public JCaseConversionConvertPluginSetting(CaseConversionConvertPlugin plugin) {
 			setLayout(new GridLayout(1, 2));
 
 			JPanel buttonPanel = new JPanel() {
@@ -190,11 +200,11 @@ public class CaseConversionConvertPlugin extends BaseConvertPlugin {
 									@Override
 									public void itemStateChanged(ItemEvent e) {
 										if (e.getStateChange() == ItemEvent.SELECTED) {
-											mode = TO_LOWERCASE.getDefaultMode()
-													.withProperty(USE_JAVA_IDENTIFIER_CONVERT, true);
+											plugin.setMode(TO_LOWERCASE.getDefaultMode()
+												.withProperty(USE_JAVA_IDENTIFIER_CONVERT, true));
 										} else if (e.getStateChange() == ItemEvent.DESELECTED) {
-											mode = TO_LOWERCASE.getDefaultMode()
-													.withProperty(USE_JAVA_IDENTIFIER_CONVERT, false);
+											plugin.setMode(TO_LOWERCASE.getDefaultMode()
+												.withProperty(USE_JAVA_IDENTIFIER_CONVERT, false));
 										}
 									}
 								});
@@ -205,14 +215,14 @@ public class CaseConversionConvertPlugin extends BaseConvertPlugin {
 						{
 							radioButtonToLowercaseSettingPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 							radioButtonToLowercaseSettingPanel
-									.setBorder(BorderFactory.createTitledBorder("ModeSetting"));
+								.setBorder(BorderFactory.createTitledBorder("ModeSetting"));
 						}
 
 						@Override
 						public void itemStateChanged(ItemEvent e) {
 							if (e.getStateChange() == ItemEvent.SELECTED) {
-								mode = TO_LOWERCASE.getDefaultMode().withProperty(USE_JAVA_IDENTIFIER_CONVERT,
-										useJavaIdentifierConverterCheckBox.isSelected());
+								plugin.setMode(TO_LOWERCASE.getDefaultMode().withProperty(USE_JAVA_IDENTIFIER_CONVERT,
+									useJavaIdentifierConverterCheckBox.isSelected()));
 								setModeSettingComponent(radioButtonToLowercaseSettingPanel);
 							} else if (e.getStateChange() == ItemEvent.DESELECTED) {
 								setModeSettingComponent(null);
@@ -238,11 +248,11 @@ public class CaseConversionConvertPlugin extends BaseConvertPlugin {
 									@Override
 									public void itemStateChanged(ItemEvent e) {
 										if (e.getStateChange() == ItemEvent.SELECTED) {
-											mode = TO_UPPERCASE.getDefaultMode()
-													.withProperty(USE_JAVA_IDENTIFIER_CONVERT, true);
+											plugin.setMode(TO_UPPERCASE.getDefaultMode()
+												.withProperty(USE_JAVA_IDENTIFIER_CONVERT, true));
 										} else if (e.getStateChange() == ItemEvent.DESELECTED) {
-											mode = TO_UPPERCASE.getDefaultMode()
-													.withProperty(USE_JAVA_IDENTIFIER_CONVERT, false);
+											plugin.setMode(TO_UPPERCASE.getDefaultMode()
+												.withProperty(USE_JAVA_IDENTIFIER_CONVERT, false));
 										}
 									}
 								});
@@ -253,14 +263,14 @@ public class CaseConversionConvertPlugin extends BaseConvertPlugin {
 						{
 							radioButtonToUppercaseSettingPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 							radioButtonToUppercaseSettingPanel
-									.setBorder(BorderFactory.createTitledBorder("ModeSetting"));
+								.setBorder(BorderFactory.createTitledBorder("ModeSetting"));
 						}
 
 						@Override
 						public void itemStateChanged(ItemEvent e) {
 							if (e.getStateChange() == ItemEvent.SELECTED) {
-								mode = TO_UPPERCASE.getDefaultMode().withProperty(USE_JAVA_IDENTIFIER_CONVERT,
-										useJavaIdentifierConverterCheckBox.isSelected());
+								plugin.setMode(TO_UPPERCASE.getDefaultMode().withProperty(USE_JAVA_IDENTIFIER_CONVERT,
+									useJavaIdentifierConverterCheckBox.isSelected()));
 								setModeSettingComponent(radioButtonToUppercaseSettingPanel);
 							} else if (e.getStateChange() == ItemEvent.DESELECTED) {
 								setModeSettingComponent(null);
@@ -276,7 +286,7 @@ public class CaseConversionConvertPlugin extends BaseConvertPlugin {
 						@Override
 						public void itemStateChanged(ItemEvent e) {
 							if (e.getStateChange() == ItemEvent.SELECTED) {
-								mode = TO_FIRST_LETTER_LOWERCASE.getDefaultMode();
+								plugin.setMode(TO_FIRST_LETTER_LOWERCASE.getDefaultMode());
 							} else if (e.getStateChange() == ItemEvent.DESELECTED) {
 
 							}
@@ -291,7 +301,7 @@ public class CaseConversionConvertPlugin extends BaseConvertPlugin {
 						@Override
 						public void itemStateChanged(ItemEvent e) {
 							if (e.getStateChange() == ItemEvent.SELECTED) {
-								mode = TO_FIRST_LETTER_UPPERCASE.getDefaultMode();
+								plugin.setMode(TO_FIRST_LETTER_UPPERCASE.getDefaultMode());
 							} else if (e.getStateChange() == ItemEvent.DESELECTED) {
 
 							}
@@ -311,13 +321,13 @@ public class CaseConversionConvertPlugin extends BaseConvertPlugin {
 						}
 						currentModeSettingComponent = component;
 						JCaseConversionConvertPluginSetting.this.add(component,
-								JCaseConversionConvertPluginSetting.this.getComponentCount());
+							JCaseConversionConvertPluginSetting.this.getComponentCount());
 						JCaseConversionConvertPluginSetting.this.updateUI();
 					} else {
 						if (currentModeSettingComponent != null) {
 							JCaseConversionConvertPluginSetting.this.remove(currentModeSettingComponent);
 							JCaseConversionConvertPluginSetting.this.add(noModeSettingPanel,
-									JCaseConversionConvertPluginSetting.this.getComponentCount());
+								JCaseConversionConvertPluginSetting.this.getComponentCount());
 							JCaseConversionConvertPluginSetting.this.updateUI();
 							currentModeSettingComponent = null;
 						}

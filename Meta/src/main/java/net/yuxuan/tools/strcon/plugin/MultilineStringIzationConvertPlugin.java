@@ -9,7 +9,7 @@ public class MultilineStringIzationConvertPlugin extends BaseConvertPlugin {
 	private static final char[] HEX = "0123456789ABCDEF".toCharArray();
 
 	public MultilineStringIzationConvertPlugin() {
-		setName("MultilineStringIzationConvertPlugin");
+		setName("MultilineStringIzationConverter");
 	}
 
 	@Override

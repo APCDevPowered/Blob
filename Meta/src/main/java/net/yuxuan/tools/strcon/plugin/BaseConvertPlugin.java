@@ -3,14 +3,27 @@ package net.yuxuan.tools.strcon.plugin;
 import java.awt.Component;
 import java.util.regex.Pattern;
 
+import net.yuxuan.tools.strcon.StringConverter;
 import net.yuxuan.utils.Regular;
 import net.yuxuan.utils.StringConsumer;
 import net.yuxuan.utils.StringConsumer.EatResult;
 
 public abstract class BaseConvertPlugin {
+	private StringConverter stringConverter;
+
 	private String name;
 
 	public abstract boolean process(StringConsumer sc, StringBuilder rb);
+
+	public final void initStringConverter(StringConverter stringConverter) {
+		if (this.stringConverter != null)
+			throw new IllegalStateException("StringConverter already initialized");
+		this.stringConverter = stringConverter;
+	}
+
+	public StringConverter getStringConverter() {
+		return stringConverter;
+	}
 
 	public Component getSettingComponent() {
 		return null;
@@ -129,12 +142,12 @@ public abstract class BaseConvertPlugin {
 						return eatResult;
 					}
 					lastEatCount += maxWithZero(sc.getLastEatCount());
-					
+
 					switch (sc.getLastEatString()) {
 					case ")":
 						sc.eatSpaces();
 						lastEatCount += maxWithZero(sc.getLastEatCount());
-						
+
 						numNested--;
 						break;
 					case ",":
