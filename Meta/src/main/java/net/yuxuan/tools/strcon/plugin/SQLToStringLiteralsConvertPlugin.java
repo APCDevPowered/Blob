@@ -48,9 +48,13 @@ public class SQLToStringLiteralsConvertPlugin extends BaseConvertPlugin {
 	public boolean process(StringConsumer sc, StringBuilder rb) {
 		StringBuilder finalString = new StringBuilder();
 		while (true) {
-			sc.eatPattern(Pattern.compile("(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:CREATE)\\s+(?i:TABLE)\\s+)"
-				+ ifTablePrefix(() -> Pattern.quote(tablePrefix)) + "(?<sqlExprAfterTablePrefix>"
-				+ ifTablePrefix(() -> "_") + "(?<tableName>\\S*?)\\s*\\(([\\s\\S]*?);))\\R(\\R|$)"));
+			sc.eatPattern(
+				Pattern.compile("(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:CREATE)\\s+(?i:TABLE)\\s+)"
+					+ ifTablePrefix(() -> Pattern.quote(tablePrefix)) + "(?<sqlExprAfterTablePrefix>"
+					+ ifTablePrefix(() -> "_") + "(?<tableName>\\S*?)\\s*\\x28([\\s\\S]*?);))\\R(\\R|$)"),
+				Pattern.compile("(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:DROP)\\s+(?i:TABLE)\\s+)"
+					+ ifTablePrefix(() -> Pattern.quote(tablePrefix)) + "(?<sqlExprAfterTablePrefix>"
+					+ ifTablePrefix(() -> "_") + "(?<tableName>\\S*?)\\s*;))\\R(\\R|$)"));
 			PatternEatResult result = sc.getLastEatResult(PatternEatResult.class);
 			if (!result.isSuccess())
 				break;
@@ -58,7 +62,17 @@ public class SQLToStringLiteralsConvertPlugin extends BaseConvertPlugin {
 			String sqlExprAfterTablePrefix = result.getMatcher().group("sqlExprAfterTablePrefix");
 			String sqlExpr = result.getMatcher().group("sqlExpr");
 			String tableName = result.getMatcher().group("tableName");
-			finalString.append("final String create");
+			finalString.append("final String ");
+			switch (result.getMatchPatternIndex()) {
+			case 0:
+				finalString.append("create");
+				break;
+			case 1:
+				finalString.append("drop");
+				break;
+			default:
+				throw new IllegalStateException();
+			}
 			CaseConversionConvertPlugin caseConversionConvertPlugin = getStringConverter()
 				.getPlugin(CaseConversionConvertPlugin.class);
 			StringBuilder temp = new StringBuilder();
