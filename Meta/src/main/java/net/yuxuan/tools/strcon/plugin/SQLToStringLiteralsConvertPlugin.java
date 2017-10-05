@@ -16,6 +16,8 @@ import javax.swing.JTextField;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 
+import com.google.common.base.Supplier;
+
 import net.yuxuan.utils.StringConsumer;
 import net.yuxuan.utils.StringConsumer.PatternEatResult;
 import net.yuxuan.utils.mode.IMode;
@@ -38,14 +40,17 @@ public class SQLToStringLiteralsConvertPlugin extends BaseConvertPlugin {
 		return setting;
 	}
 
+	private String ifTablePrefix(Supplier<String> supplier) {
+		return tablePrefix == null ? "" : supplier.get();
+	}
+
 	@Override
 	public boolean process(StringConsumer sc, StringBuilder rb) {
-		String tablePrefixRegex = tablePrefix == null ? "" : Pattern.quote(tablePrefix);
 		StringBuilder finalString = new StringBuilder();
 		while (true) {
-			sc.eatPattern(Pattern
-				.compile("(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:CREATE)\\s+(?i:TABLE)\\s+)" + tablePrefixRegex
-					+ "(?<sqlExprAfterTablePrefix>_(?<tableName>\\S*?)\\s*\\(([\\s\\S]*?);))\\R(\\R|$)"));
+			sc.eatPattern(Pattern.compile("(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:CREATE)\\s+(?i:TABLE)\\s+)"
+				+ ifTablePrefix(() -> Pattern.quote(tablePrefix)) + "(?<sqlExprAfterTablePrefix>"
+				+ ifTablePrefix(() -> "_") + "(?<tableName>\\S*?)\\s*\\(([\\s\\S]*?);))\\R(\\R|$)"));
 			PatternEatResult result = sc.getLastEatResult(PatternEatResult.class);
 			if (!result.isSuccess())
 				break;
