@@ -51,13 +51,16 @@ public class SQLToStringLiteralsConvertPlugin extends BaseConvertPlugin {
 			sc.eatPattern(
 				Pattern.compile("(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:CREATE)\\s+(?i:TABLE)\\s+)"
 					+ ifTablePrefix(() -> Pattern.quote(tablePrefix)) + "(?<sqlExprAfterTablePrefix>"
-					+ ifTablePrefix(() -> "_") + "(?<tableName>\\S*?)\\s*\\x28([\\s\\S]*?);))\\R(\\R|$)"),
+					+ ifTablePrefix(() -> "_") + "(?<tableName>\\S*?)\\s*([\\s\\S]*?);))\\R(\\R|$)"),
 				Pattern.compile("(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:DROP)\\s+(?i:TABLE)\\s+)"
 					+ ifTablePrefix(() -> Pattern.quote(tablePrefix)) + "(?<sqlExprAfterTablePrefix>"
 					+ ifTablePrefix(() -> "_") + "(?<tableName>\\S*?)\\s*;))\\R(\\R|$)"),
 				Pattern.compile("(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:INSERT)\\s+(?i:INTO)\\s+)"
 					+ ifTablePrefix(() -> Pattern.quote(tablePrefix)) + "(?<sqlExprAfterTablePrefix>"
-					+ ifTablePrefix(() -> "_") + "(?<tableName>\\S*?)\\s*\\x28([\\s\\S]*?);))\\R(\\R|$)"));
+					+ ifTablePrefix(() -> "_") + "(?<tableName>\\S*?)\\s*([\\s\\S]*?);))\\R(\\R|$)"),
+				Pattern.compile("(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:SELECT)([\\s\\S]+?)(?i:FROM)\\s+)"
+					+ ifTablePrefix(() -> Pattern.quote(tablePrefix)) + "(?<sqlExprAfterTablePrefix>"
+					+ ifTablePrefix(() -> "_") + "(?<tableName>\\S*?)\\s*([\\s\\S]*?);))\\R(\\R|$)"));
 			PatternEatResult result = sc.getLastEatResult(PatternEatResult.class);
 			if (!result.isSuccess())
 				break;
@@ -75,6 +78,9 @@ public class SQLToStringLiteralsConvertPlugin extends BaseConvertPlugin {
 				break;
 			case 2:
 				finalString.append("insert");
+				break;
+			case 3:
+				finalString.append("query");
 				break;
 			default:
 				throw new IllegalStateException();
@@ -97,6 +103,7 @@ public class SQLToStringLiteralsConvertPlugin extends BaseConvertPlugin {
 				finalString.append("TableSQL");
 				break;
 			case 2:
+			case 3:
 				finalString.append("SQL");
 				break;
 			default:
