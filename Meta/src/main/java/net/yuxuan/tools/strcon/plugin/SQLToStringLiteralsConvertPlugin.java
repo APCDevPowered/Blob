@@ -58,6 +58,9 @@ public class SQLToStringLiteralsConvertPlugin extends BaseConvertPlugin {
 				Pattern.compile("(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:INSERT)\\s+(?i:INTO)\\s+)"
 					+ ifTablePrefix(() -> Pattern.quote(tablePrefix)) + "(?<sqlExprAfterTablePrefix>"
 					+ ifTablePrefix(() -> "_") + "(?<tableName>[a-zA-Z_]+)\\s*([\\s\\S]*?);))\\R(\\R|$)"),
+				Pattern.compile("(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:UPDATE)\\s+)"
+					+ ifTablePrefix(() -> Pattern.quote(tablePrefix)) + "(?<sqlExprAfterTablePrefix>"
+					+ ifTablePrefix(() -> "_") + "(?<tableName>[a-zA-Z_]+)\\s*([\\s\\S]*?);))\\R(\\R|$)"),
 				Pattern.compile("(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:SELECT)([\\s\\S]+?)(?i:FROM)\\s+)"
 					+ ifTablePrefix(() -> Pattern.quote(tablePrefix)) + "(?<sqlExprAfterTablePrefix>"
 					+ ifTablePrefix(() -> "_") + "(?<tableName>[a-zA-Z_]+)\\s*([\\s\\S]*?);))\\R(\\R|$)"));
@@ -80,6 +83,9 @@ public class SQLToStringLiteralsConvertPlugin extends BaseConvertPlugin {
 				finalString.append("insert");
 				break;
 			case 3:
+				finalString.append("update");
+				break;
+			case 4:
 				finalString.append("query");
 				break;
 			default:
@@ -104,6 +110,7 @@ public class SQLToStringLiteralsConvertPlugin extends BaseConvertPlugin {
 				break;
 			case 2:
 			case 3:
+			case 4:
 				finalString.append("SQL");
 				break;
 			default:
