@@ -55,7 +55,7 @@ public class SQLToStringLiteralsConvertPlugin extends BaseConvertPlugin {
 				Pattern.compile("(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:DROP)\\s+(?i:TABLE)\\s+)"
 					+ ifTablePrefix(() -> Pattern.quote(tablePrefix)) + "(?<sqlExprAfterTablePrefix>"
 					+ ifTablePrefix(() -> "_") + "(?<tableName>[a-zA-Z_]+)\\s*;))\\R(\\R|$)"),
-				Pattern.compile("(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:INSERT)\\s+(?i:INTO)\\s+)"
+				Pattern.compile("(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:INSERT)\\s+(IGNORE\\s+)?(?i:INTO)\\s+)"
 					+ ifTablePrefix(() -> Pattern.quote(tablePrefix)) + "(?<sqlExprAfterTablePrefix>"
 					+ ifTablePrefix(() -> "_") + "(?<tableName>[a-zA-Z_]+)\\s*([\\s\\S]*?);))\\R(\\R|$)"),
 				Pattern.compile("(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:UPDATE)\\s+)"
