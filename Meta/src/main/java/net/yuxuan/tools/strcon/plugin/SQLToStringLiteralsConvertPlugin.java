@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import javax.swing.BoxLayout;
@@ -28,8 +29,7 @@ public class SQLToStringLiteralsConvertPlugin extends BaseConvertPlugin {
 
 	private String tablePrefix;
 
-	public String postReplaceFrom = "";
-	public String postReplaceTo = "";
+	public Function<String, String> postReplace = Function.identity();
 
 	public SQLToStringLiteralsConvertPlugin() {
 		setName("SQLToStringLiteralsConverter");
@@ -48,16 +48,18 @@ public class SQLToStringLiteralsConvertPlugin extends BaseConvertPlugin {
 	public boolean process(StringConsumer sc, StringBuilder rb) {
 		StringBuilder finalString = new StringBuilder();
 		while (true) {
-			sc.eatPattern(
-				Pattern.compile("(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:CREATE)\\s+(?i:TABLE)\\s+)"
+			sc.eatPattern(Pattern.compile(
+				"(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:CREATE)\\s+(?<sqlDataDefinition>(?i:TABLE|TYPE))\\s+)"
 					+ ifTablePrefix(() -> Pattern.quote(tablePrefix)) + "(?<sqlExprAfterTablePrefix>"
 					+ ifTablePrefix(() -> "_") + "(?<tableName>[a-zA-Z_]+)\\s*([\\s\\S]*?);))\\R(\\R|$)"),
-				Pattern.compile("(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:DROP)\\s+(?i:TABLE)\\s+)"
-					+ ifTablePrefix(() -> Pattern.quote(tablePrefix)) + "(?<sqlExprAfterTablePrefix>"
-					+ ifTablePrefix(() -> "_") + "(?<tableName>[a-zA-Z_]+)\\s*;))\\R(\\R|$)"),
-				Pattern.compile("(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:INSERT)\\s+(IGNORE\\s+)?(?i:INTO)\\s+)"
-					+ ifTablePrefix(() -> Pattern.quote(tablePrefix)) + "(?<sqlExprAfterTablePrefix>"
-					+ ifTablePrefix(() -> "_") + "(?<tableName>[a-zA-Z_]+)\\s*([\\s\\S]*?);))\\R(\\R|$)"),
+				Pattern.compile(
+					"(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:DROP)\\s+(?<sqlDataDefinition>(?i:TABLE|TYPE))\\s+)"
+						+ ifTablePrefix(() -> Pattern.quote(tablePrefix)) + "(?<sqlExprAfterTablePrefix>"
+						+ ifTablePrefix(() -> "_") + "(?<tableName>[a-zA-Z_]+)\\s*;))\\R(\\R|$)"),
+				Pattern
+					.compile("(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:INSERT)\\s+(?i:IGNORE\\s+)?(?i:INTO)\\s+)"
+						+ ifTablePrefix(() -> Pattern.quote(tablePrefix)) + "(?<sqlExprAfterTablePrefix>"
+						+ ifTablePrefix(() -> "_") + "(?<tableName>[a-zA-Z_]+)\\s*([\\s\\S]*?);))\\R(\\R|$)"),
 				Pattern.compile("(?<sqlExpr>(?<sqlExprBeforeTablePrefix>\\s*(?i:UPDATE)\\s+)"
 					+ ifTablePrefix(() -> Pattern.quote(tablePrefix)) + "(?<sqlExprAfterTablePrefix>"
 					+ ifTablePrefix(() -> "_") + "(?<tableName>[a-zA-Z_]+)\\s*([\\s\\S]*?);))\\R(\\R|$)"),
@@ -106,7 +108,18 @@ public class SQLToStringLiteralsConvertPlugin extends BaseConvertPlugin {
 			switch (result.getMatchPatternIndex()) {
 			case 0:
 			case 1:
-				finalString.append("TableSQL");
+				String sqlDataDefinition = result.getMatcher().group("sqlDataDefinition");
+				switch (sqlDataDefinition.toLowerCase()) {
+				case "table":
+					finalString.append("Table");
+					break;
+				case "type":
+					finalString.append("Type");
+					break;
+				default:
+					throw new IllegalStateException();
+				}
+				finalString.append("SQL");
 				break;
 			case 2:
 			case 3:
@@ -134,7 +147,7 @@ public class SQLToStringLiteralsConvertPlugin extends BaseConvertPlugin {
 		}
 		if (!sc.eatEOF().isSuccess())
 			return false;
-		rb.append(finalString.toString().replace(postReplaceFrom, postReplaceTo));
+		rb.append(postReplace.apply(finalString.toString()));
 		return true;
 	}
 
@@ -147,8 +160,11 @@ public class SQLToStringLiteralsConvertPlugin extends BaseConvertPlugin {
 		private JTextField tablePrefixSettingTextField;
 		private JCheckBox tablePrefixSettingCheckBox;
 
-		private JTextField postReplaceFromSettingTextField;
-		private JTextField postReplaceToSettingTextField;
+		private JTextField postReplaceOneFromSettingTextField;
+		private JTextField postReplaceOneToSettingTextField;
+
+		private JTextField postReplaceTwoFromSettingTextField;
+		private JTextField postReplaceTwoToSettingTextField;
 
 		public JSQLToStringLiteralsConvertPluginSetting(SQLToStringLiteralsConvertPlugin plugin) {
 			this.plugin = plugin;
@@ -191,28 +207,56 @@ public class SQLToStringLiteralsConvertPlugin extends BaseConvertPlugin {
 				}
 			});
 
-			JPanel postReplaceSettingPanel = new JPanel();
-			postReplaceSettingPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-			generalSettingsPanel.add(postReplaceSettingPanel);
+			JPanel postReplaceOneSettingPanel = new JPanel();
+			postReplaceOneSettingPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+			generalSettingsPanel.add(postReplaceOneSettingPanel);
 
-			postReplaceSettingPanel.add(new JLabel("Post replace:"));
+			postReplaceOneSettingPanel.add(new JLabel("Post replace:"));
 
-			postReplaceFromSettingTextField = new JTextField();
-			postReplaceSettingPanel.add(postReplaceFromSettingTextField);
-			postReplaceFromSettingTextField.setColumns(20);
-			postReplaceFromSettingTextField.addCaretListener(new CaretListener() {
+			postReplaceOneFromSettingTextField = new JTextField();
+			postReplaceOneSettingPanel.add(postReplaceOneFromSettingTextField);
+			postReplaceOneFromSettingTextField.setColumns(20);
+			postReplaceOneFromSettingTextField.addCaretListener(new CaretListener() {
 				@Override
 				public void caretUpdate(CaretEvent e) {
 					updatePostReplaceSetting();
 				}
 			});
 
-			postReplaceSettingPanel.add(new JLabel("to"));
+			postReplaceOneSettingPanel.add(new JLabel("to"));
 
-			postReplaceToSettingTextField = new JTextField();
-			postReplaceSettingPanel.add(postReplaceToSettingTextField);
-			postReplaceToSettingTextField.setColumns(20);
-			postReplaceToSettingTextField.addCaretListener(new CaretListener() {
+			postReplaceOneToSettingTextField = new JTextField();
+			postReplaceOneSettingPanel.add(postReplaceOneToSettingTextField);
+			postReplaceOneToSettingTextField.setColumns(20);
+			postReplaceOneToSettingTextField.addCaretListener(new CaretListener() {
+				@Override
+				public void caretUpdate(CaretEvent e) {
+					updatePostReplaceSetting();
+				}
+			});
+
+			JPanel postReplaceTwoSettingPanel = new JPanel();
+			postReplaceTwoSettingPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+			generalSettingsPanel.add(postReplaceTwoSettingPanel);
+
+			postReplaceTwoSettingPanel.add(new JLabel("Post replace:"));
+
+			postReplaceTwoFromSettingTextField = new JTextField();
+			postReplaceTwoSettingPanel.add(postReplaceTwoFromSettingTextField);
+			postReplaceTwoFromSettingTextField.setColumns(20);
+			postReplaceTwoFromSettingTextField.addCaretListener(new CaretListener() {
+				@Override
+				public void caretUpdate(CaretEvent e) {
+					updatePostReplaceSetting();
+				}
+			});
+
+			postReplaceTwoSettingPanel.add(new JLabel("to"));
+
+			postReplaceTwoToSettingTextField = new JTextField();
+			postReplaceTwoSettingPanel.add(postReplaceTwoToSettingTextField);
+			postReplaceTwoToSettingTextField.setColumns(20);
+			postReplaceTwoToSettingTextField.addCaretListener(new CaretListener() {
 				@Override
 				public void caretUpdate(CaretEvent e) {
 					updatePostReplaceSetting();
@@ -229,8 +273,11 @@ public class SQLToStringLiteralsConvertPlugin extends BaseConvertPlugin {
 		}
 
 		private void updatePostReplaceSetting() {
-			plugin.postReplaceFrom = postReplaceFromSettingTextField.getText();
-			plugin.postReplaceTo = postReplaceToSettingTextField.getText();
+			plugin.postReplace = Function.identity();
+			plugin.postReplace = plugin.postReplace.andThen(str -> str
+				.replace(postReplaceOneFromSettingTextField.getText(), postReplaceOneToSettingTextField.getText()));
+			plugin.postReplace = plugin.postReplace.andThen(str -> str
+				.replace(postReplaceTwoFromSettingTextField.getText(), postReplaceTwoToSettingTextField.getText()));
 		}
 	}
 }
